@@ -18,6 +18,7 @@ import { ColombianHouse } from './ColombianHouse'
 import { DrivingJeep } from './DrivingJeep'
 import { Hotspot } from './Hotspot'
 import { Mountain } from './Mountain'
+import { FallingPetals, Forest } from './Trees'
 import { CoffeeSack, FincaSign, JeepWillys, Viewpoint } from './Props'
 
 // Sol bajo, de frente y a la izquierda: contraluz de atardecer con sombras largas.
@@ -44,7 +45,7 @@ function SkyDome() {
     [],
   )
   return (
-    <mesh scale={300} renderOrder={-1}>
+    <mesh scale={520} renderOrder={-1}>
       <sphereGeometry args={[1, 48, 28]} />
       <shaderMaterial
         side={THREE.BackSide}
@@ -97,9 +98,9 @@ function Clouds() {
     const rng = createRng(99)
     return Array.from({ length: 12 }, (_, i) => {
       const a = (i / 12) * Math.PI * 2 + rng.range(-0.3, 0.3)
-      const r = rng.range(85, 120)
+      const r = rng.range(140, 200)
       return {
-        pos: [Math.cos(a) * r, rng.range(16, 30), Math.sin(a) * r] as Vec3,
+        pos: [Math.cos(a) * r, rng.range(26, 46), Math.sin(a) * r] as Vec3,
         puffs: Array.from({ length: 5 }, (_, k) => ({
           p: [k * 2.2 - 4.4 + rng.range(-0.4, 0.4), rng.range(-0.3, 0.8), rng.range(-1, 1)] as Vec3,
           s: rng.range(2.4, 4.6),
@@ -129,20 +130,20 @@ function Clouds() {
 function Lights() {
   return (
     <>
-      <hemisphereLight args={['#ff9a6a', '#4a2540', 0.75]} />
-      <ambientLight intensity={0.22} color="#ffb48a" />
+      <hemisphereLight args={['#ffa878', '#5a2f4a', 1.15]} />
+      <ambientLight intensity={0.42} color="#ffc09a" />
       <directionalLight
-        position={SUN_DIR.clone().multiplyScalar(60).toArray()}
+        position={SUN_DIR.clone().multiplyScalar(90).toArray()}
         intensity={3.6}
         color="#ff7d3c"
         castShadow
         shadow-mapSize={[4096, 4096]}
-        shadow-camera-left={-44}
-        shadow-camera-right={44}
-        shadow-camera-top={44}
-        shadow-camera-bottom={-44}
+        shadow-camera-left={-66}
+        shadow-camera-right={66}
+        shadow-camera-top={66}
+        shadow-camera-bottom={-66}
         shadow-camera-near={1}
-        shadow-camera-far={170}
+        shadow-camera-far={260}
         shadow-bias={-0.0003}
         shadow-normalBias={0.04}
       />
@@ -194,16 +195,18 @@ export default function Scene({ selectedId, nearId, onSelect, onNear, onReady, w
     <Canvas
       shadows="soft"
       dpr={[1, 2]}
-      camera={{ position: [80, 90, 90], fov: 38, near: 0.1, far: 700 }}
+      camera={{ position: [110, 120, 120], fov: 38, near: 0.1, far: 1000 }}
       gl={{ antialias: true, powerPreference: 'high-performance' }}
       onPointerMissed={() => onSelect(null)}
     >
-      <fog attach="fog" args={['#e0683c', 55, 190]} />
+      <fog attach="fog" args={['#e0683c', 90, 320]} />
       <Suspense fallback={null}>
         <SkyDome />
         <Lights />
         <Clouds />
         <Mountain />
+        <Forest />
+        <FallingPetals />
         <Lamps />
         <Fireflies />
 

@@ -5,11 +5,11 @@ import { live } from '../../lib/state'
 import { terrainHeight } from '../../lib/terrain'
 
 const ELEVATION = 0.74 // rad (~42°): ángulo fijo, como en un diorama
-const DIST_DEFAULT = 37
+const DIST_DEFAULT = 42
 const DIST_MIN = 15
-const DIST_MAX = 54
+const DIST_MAX = 85
 const DIST_FOCUS = 20
-const INTRO_DIST = 120
+const INTRO_DIST = 160
 
 interface Props {
   /** Con un proyecto abierto la cámara se acerca y desplaza el encuadre hacia el lado libre. */

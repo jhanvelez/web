@@ -12,7 +12,7 @@ export const smoothstep = (a: number, b: number, x: number) => {
  */
 export function terrainHeight(x: number, z: number): number {
   const r = Math.hypot(x, z)
-  let p4 = Math.pow(1 - smoothstep(18, WORLD_RADIUS, r), 4) // valle base ≈ 1
+  let p4 = Math.pow(1 - smoothstep(WORLD_RADIUS - 18, WORLD_RADIUS, r), 4) // valle base ≈ 1
   for (const p of PLAZA_LIST) {
     const d = Math.hypot(x - p.x, z - p.z)
     p4 += Math.pow(p.h * (1 - smoothstep(p.flat, p.outer, d)), 4)
@@ -22,17 +22,17 @@ export function terrainHeight(x: number, z: number): number {
   let flatMask = 0
   for (const p of PLAZA_LIST) {
     const d = Math.hypot(x - p.x, z - p.z)
-    const m = 1 - smoothstep(p.flat, p.flat + 2.5, d)
+    const m = 1 - smoothstep(p.flat, p.flat + 4, d)
     h = h * (1 - m) + p.h * m
     flatMask = Math.max(flatMask, m)
   }
 
-  const edge = 1 - smoothstep(WORLD_RADIUS - 7, WORLD_RADIUS, r)
+  const edge = 1 - smoothstep(WORLD_RADIUS - 9, WORLD_RADIUS, r)
   const n =
     Math.sin(x * 0.72 + 1.3) * Math.cos(z * 0.61 - 0.4) +
     0.8 * Math.sin(x * 0.29 - z * 0.41 + 2.0) +
     0.4 * Math.sin(x * 1.3 + z * 1.1)
-  let out = h * edge + n * 0.4 * (1 - flatMask) * edge
+  let out = h * edge + n * 0.22 * (1 - flatMask) * edge
   for (const p of PONDS) {
     const d = Math.hypot(x - p.x, z - p.z)
     out -= p.depth * (1 - smoothstep(p.r * 0.3, p.r, d))

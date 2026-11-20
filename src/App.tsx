@@ -10,6 +10,7 @@ import { MusicPlayer } from './components/ui/MusicPlayer'
 import { Navbar } from './components/ui/Navbar'
 import { ProjectDrawer } from './components/ui/ProjectDrawer'
 import { TouchPad } from './components/ui/TouchPad'
+import { TreeToast } from './components/ui/TreeToast'
 
 // Three.js pesa bastante: se carga aparte para que el Loader aparezca de inmediato.
 const Scene = lazy(() => import('./components/canvas/Scene'))
@@ -74,6 +75,7 @@ export default function App() {
       <ProjectDrawer project={project} github={github} onClose={close} onPrev={prev} onNext={next} />
       <MiniMap open={mapOpen} onToggle={() => setMapOpen((o) => !o)} onSelect={setSelectedId} />
       <MusicPlayer />
+      <TreeToast />
       <TouchPad canInteract={!!nearId} onInteract={interact} />
 
       {ready && !selectedId && (

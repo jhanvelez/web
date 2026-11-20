@@ -4,11 +4,12 @@ import * as THREE from 'three'
 import { createRng } from '../../lib/random'
 import { GRASS_AVOID, isClear, NETWORK } from '../../lib/layout'
 import { smoothstep, terrainHeight } from '../../lib/terrain'
+import { TREES } from '../../lib/trees'
 import { PLAZAS, PLAZA_LIST, PONDS, WATER_LEVEL, WORLD_RADIUS } from '../../lib/world'
 import { Instanced, type InstanceItem } from './Instanced'
 
-const RINGS = 84
-const SEGMENTS = 180
+const RINGS = 120
+const SEGMENTS = 260
 
 /** Terreno orgánico low-poly en polares, con color por cara (pradera, ladera, roca, tierra). */
 function buildTerrainGeometry(): THREE.BufferGeometry {
@@ -59,7 +60,7 @@ function buildTerrainGeometry(): THREE.BufferGeometry {
     const cz = (p.getZ(f) + p.getZ(f + 1) + p.getZ(f + 2)) / 3
     const r = Math.hypot(cx, cz)
     const slope = 1 - n.getY(f)
-    c.copy(low).lerp(mid, smoothstep(0.6, 3.2, cy)).lerp(high, smoothstep(3.2, 6, cy))
+    c.copy(low).lerp(mid, smoothstep(0.6, 2.0, cy)).lerp(high, smoothstep(2.0, 4.2, cy))
     c.lerp(rock, smoothstep(0.22, 0.5, slope) * 0.75)
     c.lerp(soil, smoothstep(WORLD_RADIUS - 1.3, WORLD_RADIUS, r) * 0.85)
     if (cy < WATER_LEVEL + 0.7) c.lerp(sand, smoothstep(WATER_LEVEL + 0.7, WATER_LEVEL + 0.15, cy))
@@ -74,7 +75,7 @@ function buildTerrainGeometry(): THREE.BufferGeometry {
 
 /** Base rocosa del diorama (cono invertido con vértices desplazados). */
 function buildRockBase(): THREE.BufferGeometry {
-  const H = 12
+  const H = 16
   const geo = new THREE.ConeGeometry(WORLD_RADIUS * 0.995, H, 14, 5, true)
   const p = geo.attributes.position
   for (let i = 0; i < p.count; i++) {
@@ -90,7 +91,6 @@ function buildRockBase(): THREE.BufferGeometry {
 
 const WAX_TRUNK = ['#d8cdb4', '#cfc4aa', '#e0d6bf']
 const WAX_LEAF = ['#3f8a36', '#4a9a3c', '#357a30']
-const TREE_LEAF = ['#2f8a44', '#3f9b4a', '#27783a', '#5aa63c']
 const FLOWERS = ['#e5483f', '#f6c445', '#f08ac0', '#ffffff', '#e87b2c']
 const COBBLES = ['#9a7b5a', '#a8896a', '#7d6650', '#b59a7a', '#8b8070', '#a39580']
 
@@ -113,9 +113,9 @@ function useScatter() {
     // Palmas de cera
     const palmTrunks: InstanceItem[] = []
     const palmLeaves: InstanceItem[] = []
-    for (let n = 0; n < 120; n++) {
+    for (let n = 0; n < 260; n++) {
       const p = place(0, maxR, 0.6)
-      if (!p) continue
+      if (!p || TREES.some((t) => Math.hypot(t.x - p.x, t.z - p.z) < 2.2)) continue
       const h = rng.range(3.6, 6.2)
       palmTrunks.push({
         position: [p.x, p.y + h / 2 - 0.1, p.z],
@@ -135,27 +135,13 @@ function useScatter() {
       palmLeaves.push({ position: [p.x, p.y + h - 0.1, p.z], rotation: [0.15, rng.range(0, 6), 0], scale: [1, 0.8, 1], color: leafColor })
     }
 
-    // Árboles de sombrío
-    const treeTrunks: InstanceItem[] = []
-    const treeCanopies: InstanceItem[] = []
-    for (let n = 0; n < 190; n++) {
-      const p = place(0, maxR, 0.7)
-      if (!p) continue
-      const s = rng.range(0.8, 1.5)
-      const th = 0.9 * s
-      treeTrunks.push({ position: [p.x, p.y + th / 2 - 0.1, p.z], scale: [0.16 * s, th, 0.16 * s] })
-      const col = rng.pick(TREE_LEAF)
-      treeCanopies.push({ position: [p.x, p.y + th + 0.45 * s, p.z], rotation: [0, rng.range(0, 6), 0], scale: [0.75 * s, 0.6 * s, 0.75 * s], color: col })
-      treeCanopies.push({ position: [p.x + rng.range(-0.2, 0.2), p.y + th + 0.95 * s, p.z + rng.range(-0.2, 0.2)], rotation: [0, rng.range(0, 6), 0], scale: [0.5 * s, 0.45 * s, 0.5 * s], color: col })
-    }
-
     // Cafetales: hileras en curva de nivel sobre las laderas de A y B (fuera del sector del camino).
     const bushes: InstanceItem[] = []
     const cherries: InstanceItem[] = []
     for (const id of ['A', 'B'] as const) {
       const pl = PLAZAS[id]
       const toK = Math.atan2(PLAZAS.K.z - pl.z, PLAZAS.K.x - pl.x)
-      for (const d of [10.2, 11.4, 12.6]) {
+      for (const d of [15, 16.3, 17.6]) {
         const step = 0.62 / d
         const a0 = toK + (50 * Math.PI) / 180
         const a1 = toK + (310 * Math.PI) / 180
@@ -176,7 +162,7 @@ function useScatter() {
 
     // Piedras sueltas y flores
     const rocks: InstanceItem[] = []
-    for (let n = 0; n < 70; n++) {
+    for (let n = 0; n < 150; n++) {
       const p = place(0, maxR, 0.5)
       if (!p) continue
       const s = rng.range(0.18, 0.6)
@@ -188,7 +174,7 @@ function useScatter() {
       })
     }
     const flowers: InstanceItem[] = []
-    for (let n = 0; n < 340; n++) {
+    for (let n = 0; n < 650; n++) {
       const p = place(0, maxR, 0.3, 12)
       if (!p) continue
       flowers.push({ position: [p.x, p.y + 0.06, p.z], scale: rng.range(0.04, 0.07), color: rng.pick(FLOWERS) })
@@ -235,7 +221,7 @@ function useScatter() {
     // Pasto en mechones dorados (como en los prados de la referencia).
     const grass: InstanceItem[] = []
     const GRASS = ['#b8a23a', '#9bb040', '#c9b24a', '#7ea63a', '#d1a845']
-    for (let n = 0; n < 16000 && grass.length < 9000; n++) {
+    for (let n = 0; n < 60000 && grass.length < 28000; n++) {
       const a = rng.next() * Math.PI * 2
       const r = Math.sqrt(rng.next()) * maxR
       const x = Math.cos(a) * r
@@ -243,16 +229,16 @@ function useScatter() {
       const y = terrainHeight(x, z)
       if (y < WATER_LEVEL + 0.45) continue
       if (!GRASS_AVOID.every((c) => Math.hypot(x - c.x, z - c.z) > c.r)) continue
-      const s = rng.range(0.55, 1.2)
+      const s = rng.range(0.7, 1.2)
       grass.push({
-        position: [x, y + 0.12 * s, z],
+        position: [x, y + 0.02, z],
         rotation: [rng.range(-0.25, 0.25), rng.range(0, 6), rng.range(-0.25, 0.25)],
-        scale: [s, s * rng.range(0.9, 1.6), s],
+        scale: [s, s * rng.range(0.8, 1.3), s],
         color: rng.pick(GRASS),
       })
     }
 
-    return { palmTrunks, palmLeaves, treeTrunks, treeCanopies, bushes, cherries, rocks, flowers, cobbles, grass }
+    return { palmTrunks, palmLeaves, bushes, cherries, rocks, flowers, cobbles, grass }
   }, [])
 }
 
@@ -305,15 +291,6 @@ export function Mountain() {
         <meshStandardMaterial flatShading roughness={0.8} side={THREE.DoubleSide} />
       </Instanced>
 
-      <Instanced items={s.treeTrunks}>
-        <cylinderGeometry args={[0.7, 1, 1, 6]} />
-        <meshStandardMaterial color="#6b4a2e" flatShading roughness={1} />
-      </Instanced>
-      <Instanced items={s.treeCanopies}>
-        <icosahedronGeometry args={[1, 0]} />
-        <meshStandardMaterial flatShading roughness={0.9} />
-      </Instanced>
-
       <Instanced items={s.bushes}>
         <icosahedronGeometry args={[1, 1]} />
         <meshStandardMaterial flatShading roughness={0.9} />
@@ -349,8 +326,8 @@ function PalmLeafGeometry() {
 /** Mechón: cono fino con la base en el origen. */
 function GrassBladeGeometry() {
   const geo = useMemo(() => {
-    const g = new THREE.ConeGeometry(0.07, 0.55, 4)
-    g.translate(0, 0.27, 0)
+    const g = new THREE.ConeGeometry(0.035, 0.36, 4)
+    g.translate(0, 0.18, 0)
     return g
   }, [])
   return <primitive object={geo} attach="geometry" />

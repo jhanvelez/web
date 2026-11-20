@@ -24,8 +24,8 @@ export const frontOf = (ry: number): Vec2 => [Math.sin(ry), Math.cos(ry)]
 
 /* ───────────── Casas del pueblo ───────────── */
 
-export const HOUSE_RING = 5.6
-export const HOUSE_SCALE = 0.85
+export const HOUSE_RING = 9
+export const HOUSE_SCALE = 0.9
 
 export interface HouseDef extends Placement {
   id: string
@@ -41,13 +41,19 @@ const COUNTS: Record<'A' | 'B' | 'C', number> = { A: 5, B: 5, C: 4 }
 function buildHouses(): HouseDef[] {
   const out: HouseDef[] = []
   let v = 0
+  // Las casas se abren en arco en el lado opuesto a la cámara y miran al centro de la plaza:
+  // así todas muestran su frente (y su balcón) hacia quien mira.
+  const AWAY = Math.atan2(-1, -1) // dirección contraria a la cámara inicial (+x, +z)
+  const SPAN = deg(210)
   for (const id of MOUNTAIN_IDS) {
     const p = PLAZAS[id]
     const toK = Math.atan2(K.z - p.z, K.x - p.x)
     const n = COUNTS[id]
-    for (let i = 0; i < n; i++) {
-      // Se deja libre un sector hacia el café, por donde sube el camino.
-      const a = toK + deg(40) + ((i + 0.5) * deg(280)) / n
+    // Candidatos repartidos en el arco; se descarta el sector del camino que baja al café.
+    const cand = Array.from({ length: n + 3 }, (_, i) => AWAY - SPAN / 2 + ((i + 0.5) * SPAN) / (n + 3)).filter(
+      (a) => Math.abs(Math.atan2(Math.sin(a - toK), Math.cos(a - toK))) > deg(30),
+    )
+    cand.slice(0, n).forEach((a, i) => {
       const x = p.x + Math.cos(a) * HOUSE_RING
       const z = p.z + Math.sin(a) * HOUSE_RING
       out.push({
@@ -61,7 +67,7 @@ function buildHouses(): HouseDef[] {
         scale: HOUSE_SCALE,
         main: false,
       })
-    }
+    })
   }
   // Casa principal: la de dos pisos de la montaña A que mejor se ve desde la cámara inicial.
   const main = out
@@ -136,7 +142,7 @@ function buildNetwork() {
   // Troncal: cada montaña baja al café.
   for (const id of MOUNTAIN_IDS) {
     const p = PLAZAS[id]
-    edges.push({ a: `P-${id}`, b: 'P-K', points: windingPath([p.x, p.z], [K.x, K.z], 1.1, rng.range(0, 6)) })
+    edges.push({ a: `P-${id}`, b: 'P-K', points: windingPath([p.x, p.z], [K.x, K.z], 2.4, rng.range(0, 6)) })
   }
   // Ramas: cada casa sale a la plaza de su montaña.
   for (const h of HOUSES) {
@@ -154,8 +160,8 @@ export const NETWORK = buildNetwork()
 export const ARRIERO_START: Vec2 = [K.x + 2.6, K.z + 2.6]
 
 export const KEEP_CLEAR: readonly Circle[] = [
-  ...Object.values(PLAZAS).map((p) => ({ x: p.x, z: p.z, r: p.id === 'K' ? 5.4 : 7.9 })),
-  ...HOUSES.map((h) => ({ x: h.x, z: h.z, r: 3.1 })),
+  ...Object.values(PLAZAS).map((p) => ({ x: p.x, z: p.z, r: p.id === 'K' ? 7 : 8.4 })),
+  ...HOUSES.map((h) => ({ x: h.x, z: h.z, r: 3.6 })),
   ...HOTSPOTS.filter((h) => h.place.type !== 'house').map((h) => {
     const p = resolvePlacement(h)
     return { x: p.x, z: p.z, r: 2.3 }
