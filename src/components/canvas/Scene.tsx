@@ -171,13 +171,15 @@ const TARGETS: NearTarget[] = HOTSPOT_POINTS.map((h) => ({ id: h.id, x: h.x, z: 
 interface SceneProps {
   selectedId: string | null
   nearId: string | null
+  /** Pantalla de bienvenida activa. */
+  intro: boolean
   onSelect: (hotspotId: string | null) => void
   onNear: (id: string | null) => void
   onReady?: () => void
   walkerRef: MutableRefObject<ArrieroApi | null>
 }
 
-export default function Scene({ selectedId, nearId, onSelect, onNear, onReady, walkerRef }: SceneProps) {
+export default function Scene({ selectedId, nearId, intro, onSelect, onNear, onReady, walkerRef }: SceneProps) {
   const selected = HOTSPOTS.find((h) => h.id === selectedId) ?? null
   const mainHouseId = HOUSES.find((h) => h.main)!.id
 
@@ -257,7 +259,7 @@ export default function Scene({ selectedId, nearId, onSelect, onNear, onReady, w
         })}
 
         <ArrieroWalker apiRef={walkerRef} start={ARRIERO_START} targets={TARGETS} onNear={onNear} />
-        <CameraRig focused={!!selectedId} />
+        <CameraRig focused={!!selectedId} intro={intro} />
         <ReadySignal onReady={() => onReady?.()} />
 
         <EffectComposer multisampling={4}>

@@ -198,7 +198,8 @@ function buildTrees(): TreeInst[] {
     const species = bag[Math.floor(rng.next() * bag.length)]
     if (free(x, z, species === 'pino' ? 1.9 : 2.5)) add(species, x, z)
   }
-  return out
+  // Se deja el 75 % (se quita 1 de cada 4) para un bosque más ligero y despejado.
+  return out.filter((_, i) => i % 4 !== 3).map((t, i) => ({ ...t, id: i }))
 }
 
 export const TREES: readonly TreeInst[] = buildTrees()

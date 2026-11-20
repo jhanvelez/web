@@ -64,7 +64,6 @@ export function MusicPlayer() {
   const [playing, setPlaying] = useState(false)
   const [muted, setMuted] = useState(false)
   const [error, setError] = useState(false)
-  const [created, setCreated] = useState(false)
 
   const start = useCallback(async () => {
     if (player.current || starting.current) return
@@ -82,7 +81,6 @@ export function MusicPlayer() {
           onReady: (e: { target: YTPlayer }) => {
             e.target.setVolume(45)
             e.target.playVideo()
-            setCreated(true)
           },
           onStateChange: (e: { data: number }) => {
             if (e.data === YT.PlayerState.PLAYING) setPlaying(true)
@@ -154,9 +152,7 @@ export function MusicPlayer() {
           {muted ? <VolumeX size={16} /> : <Volume2 size={16} />}
         </button>
       </div>
-      {/* El reproductor oficial debe quedar visible */}
-      <div ref={holder} className={created ? 'h-[112px] w-[200px] bg-black' : 'hidden'} />
-      {!created && !error && !playing && (
+      {!error && !playing && (
         <p className="px-3 pb-2 text-[11px] text-[#fff1dc]/60">Pulsa ▶ o cualquier tecla para activar la música.</p>
       )}
       {error && (
@@ -164,6 +160,8 @@ export function MusicPlayer() {
           No pude reproducirla aquí · abrir en YouTube <ExternalLink size={11} />
         </a>
       )}
+      {/* El reproductor se monta fuera de pantalla: solo se oye, no se ve. */}
+      <div ref={holder} aria-hidden className="pointer-events-none fixed -left-[9999px] top-0 h-[112px] w-[200px] opacity-0" />
     </div>
   )
 }

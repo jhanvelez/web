@@ -62,7 +62,7 @@ function Arriero({ walk, pace }: { walk: MutableRefObject<number>; pace: Mutable
   })
 
   return (
-    <group scale={1.15}>
+    <group scale={1.5}>
       <group ref={body}>
         {/* Piernas articuladas en la cadera: pantorrilla al aire, pantalón arremangado, alpargata */}
         {([[-0.09, legL], [0.09, legR]] as const).map(([x, ref]) => (
@@ -208,6 +208,8 @@ const wrapAngle = (a: number) => Math.atan2(Math.sin(a), Math.cos(a))
 export function ArrieroWalker({ apiRef, start, targets, onNear }: WalkerProps) {
   const group = useRef<THREE.Group>(null)
   const ring = useRef<THREE.Mesh>(null)
+  const halo = useRef<THREE.Group>(null)
+  const beacon = useRef<THREE.Mesh>(null)
   const walk = useRef(0)
   const pace = useRef(9)
   const st = useRef({ x: start[0], z: start[1], yaw: 0.4, queue: [] as Vec2[], dest: null as Vec2 | null, h: 0, vy: 0, near: null as string | null })
@@ -285,6 +287,14 @@ export function ArrieroWalker({ apiRef, start, targets, onNear }: WalkerProps) {
     g.position.set(s.x, y + s.h, s.z)
     g.rotation.y = s.yaw
 
+    // Marcas para que el arriero se note con la cámara lejos: aro y flecha escalan con la distancia.
+    const k = THREE.MathUtils.clamp(live.camDist / 26, 1, 2.6)
+    if (halo.current) halo.current.scale.setScalar(k * (1 + 0.06 * Math.sin(clock.elapsedTime * 3)))
+    if (beacon.current) {
+      beacon.current.scale.setScalar(k)
+      beacon.current.position.y = (2.7 + Math.sin(clock.elapsedTime * 3.2) * 0.12) * (0.6 + k * 0.4)
+    }
+
     live.player.x = s.x
     live.player.z = s.z
     live.player.yaw = s.yaw
@@ -320,6 +330,22 @@ export function ArrieroWalker({ apiRef, start, targets, onNear }: WalkerProps) {
     <>
       <group ref={group} position={[start[0], terrainHeight(start[0], start[1]), start[1]]}>
         <Arriero walk={walk} pace={pace} />
+        {/* Aro de luz bajo los pies */}
+        <group ref={halo} position={[0, 0.07, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <mesh>
+            <ringGeometry args={[0.75, 0.95, 40]} />
+            <meshBasicMaterial color="#ffd36a" transparent opacity={0.9} depthWrite={false} toneMapped={false} />
+          </mesh>
+          <mesh>
+            <circleGeometry args={[0.75, 40]} />
+            <meshBasicMaterial color="#ffb347" transparent opacity={0.22} depthWrite={false} toneMapped={false} />
+          </mesh>
+        </group>
+        {/* Flecha flotante sobre la cabeza */}
+        <mesh ref={beacon} position={[0, 2.7, 0]} rotation={[Math.PI, 0, 0]}>
+          <coneGeometry args={[0.22, 0.42, 4]} />
+          <meshBasicMaterial color="#ffd36a" toneMapped={false} />
+        </mesh>
       </group>
       <mesh ref={ring} visible={false} rotation={[-Math.PI / 2, 0, 0]}>
         <ringGeometry args={[0.28, 0.4, 28]} />

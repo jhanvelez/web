@@ -4,6 +4,7 @@ export const live = {
   jeep: { x: 0, z: 0, yaw: 0 },
   /** Azimut de la cámara: el movimiento del arriero es relativo a la pantalla. */
   camAz: Math.PI / 4,
+  camDist: 42,
   /** Especie de árbol más cercana al arriero (para el cartel del HUD). */
   nearTree: null as string | null,
 }

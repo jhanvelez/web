@@ -113,7 +113,7 @@ function useScatter() {
     // Palmas de cera
     const palmTrunks: InstanceItem[] = []
     const palmLeaves: InstanceItem[] = []
-    for (let n = 0; n < 260; n++) {
+    for (let n = 0; n < 195; n++) {
       const p = place(0, maxR, 0.6)
       if (!p || TREES.some((t) => Math.hypot(t.x - p.x, t.z - p.z) < 2.2)) continue
       const h = rng.range(3.6, 6.2)

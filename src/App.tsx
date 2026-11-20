@@ -9,6 +9,7 @@ import { MiniMap } from './components/ui/MiniMap'
 import { MusicPlayer } from './components/ui/MusicPlayer'
 import { Navbar } from './components/ui/Navbar'
 import { ProjectDrawer } from './components/ui/ProjectDrawer'
+import { IntroCard } from './components/ui/IntroCard'
 import { TouchPad } from './components/ui/TouchPad'
 import { TreeToast } from './components/ui/TreeToast'
 
@@ -22,6 +23,8 @@ export default function App() {
   })
   const [nearId, setNearId] = useState<string | null>(null)
   const [mapOpen, setMapOpen] = useState(false)
+  // Bienvenida: arriero grande + tarjeta, salvo que se llegue con un enlace directo a un proyecto.
+  const [intro, setIntro] = useState(() => !HOTSPOTS.some((h) => h.id === window.location.hash.slice(1)))
   const [ready, setReady] = useState(false)
   const walker = useRef<ArrieroApi | null>(null)
   const github = useGitHubRepos(PROFILE.githubUser)
@@ -50,6 +53,7 @@ export default function App() {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      if (/^(Arrow(Up|Down|Left|Right)|[wasdWASD])$/.test(e.key)) setIntro(false)
       if (e.key === 'f' || e.key === 'F' || e.key === 'Enter') interact()
       if (e.key === 'm' || e.key === 'M') setMapOpen((o) => !o)
       if (e.key === 'Escape') setMapOpen(false)
@@ -64,6 +68,7 @@ export default function App() {
         <Scene
           selectedId={selectedId}
           nearId={nearId}
+          intro={intro && !selectedId}
           onSelect={setSelectedId}
           onNear={setNearId}
           onReady={onReady}
@@ -76,9 +81,10 @@ export default function App() {
       <MiniMap open={mapOpen} onToggle={() => setMapOpen((o) => !o)} onSelect={setSelectedId} />
       <MusicPlayer />
       <TreeToast />
+      <IntroCard visible={ready && intro && !selectedId} onStart={() => setIntro(false)} />
       <TouchPad canInteract={!!nearId} onInteract={interact} />
 
-      {ready && !selectedId && (
+      {ready && !selectedId && !intro && (
         <div className="pointer-events-none fixed inset-x-0 bottom-5 z-20 flex flex-col items-center gap-2 text-center max-[767px]:hidden">
           {nearHotspot && (
             <p className="rounded-full bg-[#f2b632] px-5 py-2 text-sm font-semibold text-[#2a1018] shadow-xl">
