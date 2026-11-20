@@ -1,15 +1,18 @@
 import { useEffect, useRef, type MutableRefObject } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
-import { route, resolveTarget, WANDER_TARGETS } from '../../lib/nav'
+import { input } from '../../lib/input'
+import { blocked, resolveTarget, route } from '../../lib/nav'
+import { live } from '../../lib/state'
 import { terrainHeight } from '../../lib/terrain'
 import type { Vec2 } from '../../types/portfolio'
 
 const SKIN = '#c98a5e'
 const SHIRT = '#f4efe2'
 const PANTS = '#e8dcc0'
-const SPEED = 1.9
-const IDLE_BEFORE_WANDER = 14
+const AUTO_SPEED = 2.6
+const WALK_SPEED = 2.9
+const RUN_SPEED = 5.4
 
 function M({ color, rough = 0.9 }: { color: string; rough?: number }) {
   return <meshStandardMaterial color={color} roughness={rough} flatShading />
@@ -19,7 +22,8 @@ function M({ color, rough = 0.9 }: { color: string; rough?: number }) {
  * Arriero antioqueño low-poly: sombrero aguadeño, ruana al hombro, carriel y pantalón arremangado.
  * `walk` (0..1) mezcla la animación de caminata; en reposo respira, mueve la cabeza y saluda cada ~8 s.
  */
-function Arriero({ walk }: { walk: MutableRefObject<number> }) {
+function Arriero({ walk, pace }: { walk: MutableRefObject<number>; pace: MutableRefObject<number> }) {
+  const phase = useRef(0)
   const body = useRef<THREE.Group>(null)
   const chest = useRef<THREE.Group>(null)
   const head = useRef<THREE.Group>(null)
@@ -32,11 +36,12 @@ function Arriero({ walk }: { walk: MutableRefObject<number> }) {
     const t = clock.elapsedTime
     const w = walk.current
     const breathe = Math.sin(t * 1.8)
-    const stride = Math.sin(t * 9)
+    phase.current += dt * pace.current
+    const stride = Math.sin(phase.current)
 
     if (chest.current) chest.current.scale.set(1 + breathe * 0.012, 1 + breathe * 0.025, 1 + breathe * 0.012)
     if (body.current) {
-      body.current.position.y = w > 0.05 ? Math.abs(Math.sin(t * 9)) * 0.03 * w : Math.abs(Math.sin(t * 0.9)) * 0.004
+      body.current.position.y = w > 0.05 ? Math.abs(stride) * 0.03 * w : Math.abs(Math.sin(t * 0.9)) * 0.004
       body.current.rotation.z = Math.sin(t * 0.7) * 0.012 * (1 - w) + stride * 0.03 * w
     }
     if (head.current) {
@@ -174,30 +179,38 @@ function Arriero({ walk }: { walk: MutableRefObject<number> }) {
 }
 
 export interface ArrieroApi {
-  /** Camina hasta (x, z) por la ruta más lógica (caminos de piedra entre montañas). */
+  /** Camina solo hasta (x, z) por la ruta más lógica (caminos de piedra entre montañas). */
   walkTo: (x: number, z: number) => void
+}
+
+export interface NearTarget {
+  id: string
+  x: number
+  z: number
+  radius: number
 }
 
 interface WalkerProps {
   apiRef: MutableRefObject<ArrieroApi | null>
   start: Vec2
-  /** Con el panel abierto no pasea solo. */
-  paused: boolean
+  /** Lugares interactivos: se avisa cuál es el más cercano dentro de su radio. */
+  targets: readonly NearTarget[]
+  onNear: (id: string | null) => void
 }
 
 const wrapAngle = (a: number) => Math.atan2(Math.sin(a), Math.cos(a))
 
 /**
- * Controla al arriero: sigue una cola de waypoints sobre el terreno, gira hacia donde camina,
- * muestra un anillo en el destino y, tras un rato quieto, pasea solo de casa en casa.
+ * Controla al arriero con el teclado (flechas/WASD, Shift corre, Espacio salta); el movimiento es
+ * relativo a la pantalla. No atraviesa agua, casas ni el borde del mundo. Además puede caminar solo
+ * hasta un lugar (al abrir un proyecto); cualquier tecla de movimiento cancela ese trayecto.
  */
-export function ArrieroWalker({ apiRef, start, paused }: WalkerProps) {
+export function ArrieroWalker({ apiRef, start, targets, onNear }: WalkerProps) {
   const group = useRef<THREE.Group>(null)
   const ring = useRef<THREE.Mesh>(null)
   const walk = useRef(0)
-  const st = useRef({ x: start[0], z: start[1], yaw: 0.4, queue: [] as Vec2[], idle: 0, dest: null as Vec2 | null })
-  const pausedRef = useRef(paused)
-  pausedRef.current = paused
+  const pace = useRef(9)
+  const st = useRef({ x: start[0], z: start[1], yaw: 0.4, queue: [] as Vec2[], dest: null as Vec2 | null, h: 0, vy: 0, near: null as string | null })
 
   useEffect(() => {
     apiRef.current = {
@@ -206,7 +219,6 @@ export function ArrieroWalker({ apiRef, start, paused }: WalkerProps) {
         const target = resolveTarget(x, z)
         s.queue = route([s.x, s.z], target)
         s.dest = target
-        s.idle = 0
       },
     }
     return () => {
@@ -220,8 +232,31 @@ export function ArrieroWalker({ apiRef, start, paused }: WalkerProps) {
     const g = group.current
     if (!g) return
 
-    const next = s.queue[0]
-    if (next) {
+    const ax = input.axis()
+    let speed = 0
+
+    if (ax.x !== 0 || ax.y !== 0) {
+      // Manual: relativo a la cámara (arriba = alejarse de la cámara).
+      s.queue = []
+      s.dest = null
+      const az = live.camAz
+      let dx = -Math.sin(az) * ax.y + Math.cos(az) * ax.x
+      let dz = -Math.cos(az) * ax.y - Math.sin(az) * ax.x
+      const l = Math.hypot(dx, dz)
+      dx /= l
+      dz /= l
+      speed = input.run() ? RUN_SPEED : WALK_SPEED
+      const nx = s.x + dx * speed * dt
+      const nz = s.z + dz * speed * dt
+      if (!blocked(nx, nz)) {
+        s.x = nx
+        s.z = nz
+      } else if (!blocked(nx, s.z)) s.x = nx
+      else if (!blocked(s.x, nz)) s.z = nz
+      else speed = 0
+      s.yaw += wrapAngle(Math.atan2(dx, dz) - s.yaw) * (1 - Math.exp(-dt * 12))
+    } else if (s.queue.length) {
+      const next = s.queue[0]
       const dx = next[0] - s.x
       const dz = next[1] - s.z
       const d = Math.hypot(dx, dz)
@@ -229,28 +264,48 @@ export function ArrieroWalker({ apiRef, start, paused }: WalkerProps) {
         s.queue.shift()
         if (!s.queue.length) s.dest = null
       } else {
-        const step = Math.min(d, SPEED * dt)
+        speed = AUTO_SPEED
+        const step = Math.min(d, speed * dt)
         s.x += (dx / d) * step
         s.z += (dz / d) * step
         s.yaw += wrapAngle(Math.atan2(dx, dz) - s.yaw) * (1 - Math.exp(-dt * 10))
       }
-      walk.current = THREE.MathUtils.damp(walk.current, 1, 10, dt)
-      s.idle = 0
-    } else {
-      walk.current = THREE.MathUtils.damp(walk.current, 0, 10, dt)
-      if (!pausedRef.current) {
-        s.idle += dt
-        if (s.idle > IDLE_BEFORE_WANDER) {
-          const t = WANDER_TARGETS[Math.floor(Math.random() * WANDER_TARGETS.length)]
-          s.queue = route([s.x, s.z], t)
-          s.dest = t
-          s.idle = 0
-        }
-      }
     }
 
-    g.position.set(s.x, terrainHeight(s.x, s.z), s.z)
+    // Salto
+    if (input.consumeJump() && s.h <= 0.001) s.vy = 4.6
+    s.vy -= 13 * dt
+    s.h = Math.max(0, s.h + s.vy * dt)
+    if (s.h === 0 && s.vy < 0) s.vy = 0
+
+    walk.current = THREE.MathUtils.damp(walk.current, speed > 0 ? 1 : 0, 10, dt)
+    pace.current = speed > WALK_SPEED + 0.5 ? 14 : 9.5
+
+    const y = terrainHeight(s.x, s.z)
+    g.position.set(s.x, y + s.h, s.z)
     g.rotation.y = s.yaw
+
+    live.player.x = s.x
+    live.player.z = s.z
+    live.player.yaw = s.yaw
+    live.player.speed = speed
+
+    // ¿Qué lugar interactivo tengo cerca?
+    let best: string | null = null
+    let bd = Infinity
+    for (const t of targets) {
+      const tx = t.id === 'hs-jeep' ? live.jeep.x : t.x
+      const tz = t.id === 'hs-jeep' ? live.jeep.z : t.z
+      const d = Math.hypot(tx - s.x, tz - s.z)
+      if (d < t.radius && d < bd) {
+        bd = d
+        best = t.id
+      }
+    }
+    if (best !== s.near) {
+      s.near = best
+      onNear(best)
+    }
 
     if (ring.current) {
       ring.current.visible = !!s.dest
@@ -264,7 +319,7 @@ export function ArrieroWalker({ apiRef, start, paused }: WalkerProps) {
   return (
     <>
       <group ref={group} position={[start[0], terrainHeight(start[0], start[1]), start[1]]}>
-        <Arriero walk={walk} />
+        <Arriero walk={walk} pace={pace} />
       </group>
       <mesh ref={ring} visible={false} rotation={[-Math.PI / 2, 0, 0]}>
         <ringGeometry args={[0.28, 0.4, 28]} />

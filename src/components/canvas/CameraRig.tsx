@@ -1,83 +1,83 @@
-import { useEffect, useMemo, useRef, useState, type ElementRef } from 'react'
-import { OrbitControls } from '@react-three/drei'
+import { useEffect, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
-import type { CameraFocus, Vec3 } from '../../types/portfolio'
+import { live } from '../../lib/state'
+import { terrainHeight } from '../../lib/terrain'
 
-export const HOME: CameraFocus = { position: [52, 35, 61], target: [0, 3, 0] }
+const ELEVATION = 0.74 // rad (~42°): ángulo fijo, como en un diorama
+const DIST_DEFAULT = 37
+const DIST_MIN = 15
+const DIST_MAX = 54
+const DIST_FOCUS = 20
+const INTRO_DIST = 120
 
 interface Props {
-  focus: CameraFocus | null
+  /** Con un proyecto abierto la cámara se acerca y desplaza el encuadre hacia el lado libre. */
+  focused: boolean
 }
 
 /**
- * OrbitControls acotado + transiciones suaves (amortiguación exponencial) hacia cada hotspot.
- * Si el usuario toca los controles durante una transición, se cancela y manda el usuario.
- * Con el drawer abierto, desplaza el encuadre (view offset) para que el objeto quede visible.
+ * Cámara fija con seguimiento: ángulo constante detrás del arriero, amortiguada.
+ * Rueda del mouse = zoom; Q / E = girar 45° (el movimiento del arriero es relativo a la pantalla).
+ * Arranca muy lejos y se acerca en una entrada suave.
  */
-export function CameraRig({ focus }: Props) {
-  const controls = useRef<ElementRef<typeof OrbitControls>>(null)
-  const { camera, size } = useThree()
-  const animating = useRef(true)
-  const [touched, setTouched] = useState(false)
+export function CameraRig({ focused }: Props) {
+  const { camera, size, gl } = useThree()
+  const az = useRef({ cur: Math.PI / 4, goal: Math.PI / 4 })
+  const dist = useRef({ cur: INTRO_DIST, goal: DIST_DEFAULT })
+  const focus = useRef(new THREE.Vector3(0, 2, 0))
   const offset = useRef({ x: 0, y: 0 })
 
-  const goal = focus ?? HOME
-  const goalPos = useMemo(() => new THREE.Vector3(...(goal.position as Vec3)), [goal])
-  const goalTarget = useMemo(() => new THREE.Vector3(...(goal.target as Vec3)), [goal])
-
   useEffect(() => {
-    animating.current = true
-  }, [goal])
-
-  useFrame((_, dt) => {
-    const c = controls.current
-    if (!c) return
-    const k = 1 - Math.exp(-Math.min(dt, 0.05) * 3.2)
-
-    if (animating.current) {
-      camera.position.lerp(goalPos, k)
-      c.target.lerp(goalTarget, k)
-      if (camera.position.distanceTo(goalPos) < 0.04 && c.target.distanceTo(goalTarget) < 0.04) {
-        animating.current = false
-      }
+    const el = gl.domElement
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault()
+      dist.current.goal = THREE.MathUtils.clamp(dist.current.goal * (1 + Math.sign(e.deltaY) * 0.08), DIST_MIN, DIST_MAX)
     }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'q' || e.key === 'Q') az.current.goal += Math.PI / 4
+      if (e.key === 'e' || e.key === 'E') az.current.goal -= Math.PI / 4
+    }
+    el.addEventListener('wheel', onWheel, { passive: false })
+    window.addEventListener('keydown', onKey)
+    return () => {
+      el.removeEventListener('wheel', onWheel)
+      window.removeEventListener('keydown', onKey)
+    }
+  }, [gl])
 
-    // Desplaza el encuadre cuando el drawer ocupa parte de la pantalla.
+  useFrame((_, rawDt) => {
+    const dt = Math.min(rawDt, 0.05)
+    const a = az.current
+    const d = dist.current
+    a.cur = THREE.MathUtils.damp(a.cur, a.goal, 5, dt)
+    d.cur = THREE.MathUtils.damp(d.cur, focused ? Math.min(d.goal, DIST_FOCUS) : d.goal, d.cur > 60 ? 1.6 : 3, dt)
+    live.camAz = a.cur
+
+    const p = live.player
+    const target = new THREE.Vector3(p.x, terrainHeight(p.x, p.z) + 1, p.z)
+    focus.current.lerp(target, 1 - Math.exp(-dt * 4.5))
+
+    const horizontal = Math.cos(ELEVATION) * d.cur
+    camera.position.set(
+      focus.current.x + Math.sin(a.cur) * horizontal,
+      focus.current.y + Math.sin(ELEVATION) * d.cur,
+      focus.current.z + Math.cos(a.cur) * horizontal,
+    )
+    camera.lookAt(focus.current)
+
+    // Con el panel abierto, el arriero queda en la parte libre de la pantalla.
+    const cam = camera as THREE.PerspectiveCamera
     const wide = size.width >= 768
-    const tx = focus && wide ? Math.min(440, size.width * 0.45) / 2 : 0
-    const ty = focus && !wide ? size.height * 0.22 : 0
+    const tx = focused && wide ? Math.min(440, size.width * 0.45) / 2 : 0
+    const ty = focused && !wide ? size.height * 0.22 : 0
     const o = offset.current
+    const k = 1 - Math.exp(-dt * 5)
     o.x += (tx - o.x) * k
     o.y += (ty - o.y) * k
-    if (Math.abs(o.x) + Math.abs(o.y) > 0.5 || tx + ty > 0) {
-      ;(camera as THREE.PerspectiveCamera).setViewOffset(size.width, size.height, o.x, o.y, size.width, size.height)
-    } else if ((camera as THREE.PerspectiveCamera).view?.enabled) {
-      ;(camera as THREE.PerspectiveCamera).clearViewOffset()
-    }
-
-    c.update()
+    if (Math.abs(o.x) + Math.abs(o.y) > 0.5) cam.setViewOffset(size.width, size.height, o.x, o.y, size.width, size.height)
+    else if (cam.view?.enabled) cam.clearViewOffset()
   })
 
-  return (
-    <OrbitControls
-      ref={controls}
-      makeDefault
-      enablePan={false}
-      enableDamping
-      dampingFactor={0.07}
-      minDistance={2.5}
-      maxDistance={125}
-      minPolarAngle={0.3}
-      maxPolarAngle={Math.PI / 2 - 0.05}
-      rotateSpeed={0.6}
-      zoomSpeed={0.7}
-      autoRotate={!focus && !touched}
-      autoRotateSpeed={0.35}
-      onStart={() => {
-        animating.current = false
-        setTouched(true)
-      }}
-    />
-  )
+  return null
 }

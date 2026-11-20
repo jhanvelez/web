@@ -30,23 +30,46 @@ function Cyl({ r, h, position, color, rotation, seg = 10 }: { r: number; h: numb
 
 const JEEP = { body: '#1f9a8a', trim: '#f2e8cf', dark: '#2a2a2a', chrome: '#cfd3d6' }
 
-function Wheel({ position }: { position: V3 }) {
+export interface JeepRig {
+  /** Ángulo de giro de las ruedas (rad). */
+  roll: number
+  /** Rebote vertical de cada rueda: [del. der., del. izq., tras. der., tras. izq.]. */
+  bounce: [number, number, number, number]
+}
+const STATIC_RIG: JeepRig = { roll: 0, bounce: [0, 0, 0, 0] }
+
+function Wheel({ position, index, rig }: { position: V3; index: number; rig: JeepRig }) {
+  const outer = useRef<THREE.Group>(null)
+  const spin = useRef<THREE.Group>(null)
+  useFrame(() => {
+    if (outer.current) outer.current.position.y = position[1] + rig.bounce[index]
+    if (spin.current) spin.current.rotation.y = -rig.roll
+  })
   return (
-    <group position={position} rotation={[0, 0, Math.PI / 2]}>
-      <mesh castShadow>
-        <cylinderGeometry args={[0.2, 0.2, 0.15, 14]} />
-        <meshStandardMaterial color="#1c1c1c" roughness={0.95} flatShading />
-      </mesh>
-      <mesh>
-        <cylinderGeometry args={[0.1, 0.1, 0.16, 10]} />
-        <meshStandardMaterial color={JEEP.trim} roughness={0.5} flatShading />
-      </mesh>
+    <group ref={outer} position={position} rotation={[0, 0, Math.PI / 2]}>
+      <group ref={spin}>
+        <mesh castShadow>
+          <cylinderGeometry args={[0.2, 0.2, 0.15, 14]} />
+          <meshStandardMaterial color="#1c1c1c" roughness={0.95} flatShading />
+        </mesh>
+        <mesh>
+          <cylinderGeometry args={[0.1, 0.1, 0.16, 10]} />
+          <meshStandardMaterial color={JEEP.trim} roughness={0.5} flatShading />
+        </mesh>
+        {/* Tacos del neumático: se nota que gira */}
+        {Array.from({ length: 8 }, (_, i) => (
+          <mesh key={i} rotation={[0, (i / 8) * Math.PI * 2, 0]} position={[Math.sin((i / 8) * Math.PI * 2) * 0.2, 0, Math.cos((i / 8) * Math.PI * 2) * 0.2]}>
+            <boxGeometry args={[0.05, 0.17, 0.05]} />
+            <meshStandardMaterial color="#111" roughness={1} flatShading />
+          </mesh>
+        ))}
+      </group>
     </group>
   )
 }
 
 /** Willys clásico estilo "yipao" cafetero, con carga de café en el techo. Frente hacia +Z. */
-export function JeepWillys() {
+export function JeepWillys({ rig = STATIC_RIG }: { rig?: JeepRig }) {
   return (
     <group>
       <Box size={[0.8, 0.1, 1.75]} position={[0, 0.3, 0]} color={JEEP.dark} />
@@ -110,10 +133,10 @@ export function JeepWillys() {
           <meshStandardMaterial color={JEEP.body} flatShading />
         </mesh>
       </group>
-      <Wheel position={[0.42, 0.2, 0.62]} />
-      <Wheel position={[-0.42, 0.2, 0.62]} />
-      <Wheel position={[0.42, 0.2, -0.5]} />
-      <Wheel position={[-0.42, 0.2, -0.5]} />
+      <Wheel position={[0.42, 0.2, 0.62]} index={0} rig={rig} />
+      <Wheel position={[-0.42, 0.2, 0.62]} index={1} rig={rig} />
+      <Wheel position={[0.42, 0.2, -0.5]} index={2} rig={rig} />
+      <Wheel position={[-0.42, 0.2, -0.5]} index={3} rig={rig} />
     </group>
   )
 }

@@ -52,12 +52,10 @@ export function ProjectDrawer({ project, github, onClose, onPrev, onNext }: Prop
     if (!project) return
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
-      if (e.key === 'ArrowRight') onNext()
-      if (e.key === 'ArrowLeft') onPrev()
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [project, onClose, onNext, onPrev])
+  }, [project, onClose])
 
   const live = project?.repoName ? github.byName.get(project.repoName.toLowerCase()) : undefined
   const featured =
@@ -196,7 +194,7 @@ export function ProjectDrawer({ project, github, onClose, onPrev, onNext }: Prop
             <button type="button" onClick={onPrev} className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 transition hover:bg-[#3b2417]/10">
               <ChevronLeft size={16} /> Anterior
             </button>
-            <span className="text-xs text-[#3b2417]/50">← → para navegar · Esc para cerrar</span>
+            <span className="text-xs text-[#3b2417]/50">Esc para cerrar · haz clic fuera para volver</span>
             <button type="button" onClick={onNext} className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 transition hover:bg-[#3b2417]/10">
               Siguiente <ChevronRight size={16} />
             </button>

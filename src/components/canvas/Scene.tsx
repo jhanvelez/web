@@ -1,64 +1,51 @@
-import { Suspense, useCallback, useEffect, useMemo, useRef, type ReactNode } from 'react'
+import { Suspense, useEffect, useMemo, useRef, type MutableRefObject, type ReactNode } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { Environment, Lightformer } from '@react-three/drei'
-import { Bloom, EffectComposer, ToneMapping, Vignette } from '@react-three/postprocessing'
+import { Bloom, EffectComposer, TiltShift2, ToneMapping, Vignette } from '@react-three/postprocessing'
 import { ToneMappingMode } from 'postprocessing'
 import * as THREE from 'three'
 import { HOTSPOTS } from '../../data/projects'
-import { ARRIERO_START, HOUSES, frontOf, resolvePlacement, standPoint } from '../../lib/layout'
+import { ARRIERO_START, HOTSPOT_POINTS, HOUSES, resolvePlacement, standPoint } from '../../lib/layout'
 import { createRng } from '../../lib/random'
+import { live } from '../../lib/state'
 import { terrainHeight } from '../../lib/terrain'
-import type { CameraFocus, HotspotConfig, HotspotKind, Vec3 } from '../../types/portfolio'
-import { ArrieroWalker, type ArrieroApi } from './Arriero'
+import type { HotspotKind, Vec3 } from '../../types/portfolio'
+import { Fireflies, Lamps } from './Ambient'
+import { ArrieroWalker, type ArrieroApi, type NearTarget } from './Arriero'
 import { CameraRig } from './CameraRig'
 import { CoffeeCorner } from './CoffeeCorner'
 import { ColombianHouse } from './ColombianHouse'
+import { DrivingJeep } from './DrivingJeep'
 import { Hotspot } from './Hotspot'
 import { Mountain } from './Mountain'
 import { CoffeeSack, FincaSign, JeepWillys, Viewpoint } from './Props'
 
-const SUN_DIR = new THREE.Vector3(-14, 6.5, 11).normalize()
+// Sol bajo, de frente y a la izquierda: contraluz de atardecer con sombras largas.
+const SUN_DIR = new THREE.Vector3(-16, 5.5, -13).normalize()
 
-const PROP_BY_KIND: Record<HotspotKind, () => ReactNode> = {
+const PROP_BY_KIND: Record<Exclude<HotspotKind, 'jeep'>, () => ReactNode> = {
   house: () => <ColombianHouse palette={4} floors={2} detail="full" scale={1} />,
-  jeep: () => <JeepWillys />,
   sack: () => <CoffeeSack />,
   sign: () => <FincaSign />,
   viewpoint: () => <Viewpoint />,
   cafe: () => <CoffeeCorner />,
 }
 
-/** Rota un offset local (x, z) por el yaw del objeto. */
-function rotate([x, y, z]: Vec3, ry: number): Vec3 {
-  const [fx, fz] = frontOf(ry) // (sin, cos)
-  return [x * fz + z * fx, y, -x * fx + z * fz]
-}
-
-export function focusFor(h: HotspotConfig): CameraFocus {
-  const p = resolvePlacement(h)
-  const ay = terrainHeight(p.x, p.z)
-  const c = rotate(h.cameraOffset, p.rotationY)
-  const t = rotate(h.targetOffset, p.rotationY)
-  return {
-    position: [p.x + c[0], ay + c[1], p.z + c[2]],
-    target: [p.x + t[0], ay + t[1], p.z + t[2]],
-  }
-}
-
-/** Cielo de atardecer andino: degradado + disco solar (sin texturas externas). */
+/** Cielo de atardecer colombiano: magenta → carmesí → naranja → oro, con estelas y disco solar. */
 function SkyDome() {
   const uniforms = useMemo(
     () => ({
-      top: { value: new THREE.Color('#2f4a7d') },
-      mid: { value: new THREE.Color('#e98f6a') },
-      horizon: { value: new THREE.Color('#ffd49a') },
+      top: { value: new THREE.Color('#3b1747') },
+      upper: { value: new THREE.Color('#a8243a') },
+      mid: { value: new THREE.Color('#f0602a') },
+      horizon: { value: new THREE.Color('#ffb13b') },
       sunDir: { value: SUN_DIR.clone() },
     }),
     [],
   )
   return (
     <mesh scale={300} renderOrder={-1}>
-      <sphereGeometry args={[1, 32, 20]} />
+      <sphereGeometry args={[1, 48, 28]} />
       <shaderMaterial
         side={THREE.BackSide}
         depthWrite={false}
@@ -71,15 +58,30 @@ function SkyDome() {
             gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
           }`}
         fragmentShader={/* glsl */ `
-          uniform vec3 top; uniform vec3 mid; uniform vec3 horizon; uniform vec3 sunDir;
+          uniform vec3 top; uniform vec3 upper; uniform vec3 mid; uniform vec3 horizon; uniform vec3 sunDir;
           varying vec3 vDir;
+          float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+          float noise(vec2 p) {
+            vec2 i = floor(p), f = fract(p);
+            f = f * f * (3.0 - 2.0 * f);
+            return mix(mix(hash(i), hash(i + vec2(1, 0)), f.x), mix(hash(i + vec2(0, 1)), hash(i + vec2(1, 1)), f.x), f.y);
+          }
           void main() {
-            float h = vDir.y;
-            vec3 col = mix(horizon, mid, smoothstep(-0.02, 0.22, h));
-            col = mix(col, top, smoothstep(0.18, 0.85, h));
-            float s = max(dot(normalize(vDir), normalize(sunDir)), 0.0);
-            col += vec3(1.0, 0.72, 0.4) * pow(s, 24.0) * 0.55;
-            col += vec3(1.0, 0.95, 0.8) * smoothstep(0.9985, 0.9995, s) * 2.0;
+            vec3 d = normalize(vDir);
+            float h = d.y;
+            vec3 col = mix(horizon, mid, smoothstep(-0.02, 0.1, h));
+            col = mix(col, upper, smoothstep(0.08, 0.38, h));
+            col = mix(col, top, smoothstep(0.32, 0.9, h));
+            // Estelas de nubes alargadas, teñidas por el sol.
+            float ang = atan(d.z, d.x);
+            float streak = noise(vec2(ang * 2.2, h * 16.0)) * 0.6 + noise(vec2(ang * 5.0, h * 34.0)) * 0.4;
+            float band = smoothstep(0.02, 0.2, h) * (1.0 - smoothstep(0.35, 0.7, h));
+            col = mix(col, col * vec3(1.35, 0.72, 0.78), smoothstep(0.45, 0.8, streak) * band * 0.75);
+            col += vec3(1.0, 0.8, 0.5) * smoothstep(0.55, 0.9, streak) * band * 0.15;
+            float s = max(dot(d, normalize(sunDir)), 0.0);
+            col += vec3(1.0, 0.55, 0.25) * pow(s, 10.0) * 0.55;
+            col += vec3(1.0, 0.75, 0.4) * pow(s, 60.0) * 0.8;
+            col += vec3(1.0, 0.95, 0.8) * smoothstep(0.9985, 0.9996, s) * 3.0;
             gl_FragColor = vec4(col, 1.0);
             #include <colorspace_fragment>
           }`}
@@ -88,34 +90,34 @@ function SkyDome() {
   )
 }
 
-/** Nubes low-poly que derivan lentamente alrededor del diorama. */
+/** Nubes low-poly encendidas por el atardecer. */
 function Clouds() {
   const group = useRef<THREE.Group>(null)
   const clouds = useMemo(() => {
     const rng = createRng(99)
-    return Array.from({ length: 11 }, (_, i) => {
-      const a = (i / 11) * Math.PI * 2 + rng.range(-0.3, 0.3)
-      const r = rng.range(78, 110)
+    return Array.from({ length: 12 }, (_, i) => {
+      const a = (i / 12) * Math.PI * 2 + rng.range(-0.3, 0.3)
+      const r = rng.range(85, 120)
       return {
         pos: [Math.cos(a) * r, rng.range(16, 30), Math.sin(a) * r] as Vec3,
         puffs: Array.from({ length: 5 }, (_, k) => ({
-          p: [k * 1.9 - 3.8 + rng.range(-0.4, 0.4), rng.range(-0.3, 0.7), rng.range(-1, 1)] as Vec3,
-          s: rng.range(2, 4),
+          p: [k * 2.2 - 4.4 + rng.range(-0.4, 0.4), rng.range(-0.3, 0.8), rng.range(-1, 1)] as Vec3,
+          s: rng.range(2.4, 4.6),
         })),
       }
     })
   }, [])
   useFrame((_, dt) => {
-    if (group.current) group.current.rotation.y += dt * 0.01
+    if (group.current) group.current.rotation.y += dt * 0.008
   })
   return (
     <group ref={group}>
       {clouds.map((c, i) => (
         <group key={i} position={c.pos} rotation={[0, -Math.atan2(c.pos[2], c.pos[0]), 0]}>
           {c.puffs.map((p, k) => (
-            <mesh key={k} position={p.p} scale={[p.s * 1.3, p.s * 0.7, p.s]}>
+            <mesh key={k} position={p.p} scale={[p.s * 1.4, p.s * 0.6, p.s]}>
               <icosahedronGeometry args={[1, 1]} />
-              <meshStandardMaterial color="#fff1e2" emissive="#ffc9a0" emissiveIntensity={0.35} flatShading roughness={1} />
+              <meshStandardMaterial color="#ffb9a0" emissive="#ff6a4a" emissiveIntensity={0.5} flatShading roughness={1} />
             </mesh>
           ))}
         </group>
@@ -127,12 +129,12 @@ function Clouds() {
 function Lights() {
   return (
     <>
-      <hemisphereLight args={['#ffd9b0', '#4d6b3a', 0.7]} />
-      <ambientLight intensity={0.25} color="#ffe2c8" />
+      <hemisphereLight args={['#ff9a6a', '#4a2540', 0.75]} />
+      <ambientLight intensity={0.22} color="#ffb48a" />
       <directionalLight
         position={SUN_DIR.clone().multiplyScalar(60).toArray()}
-        intensity={3.2}
-        color="#ffb77a"
+        intensity={3.6}
+        color="#ff7d3c"
         castShadow
         shadow-mapSize={[4096, 4096]}
         shadow-camera-left={-44}
@@ -144,58 +146,66 @@ function Lights() {
         shadow-bias={-0.0003}
         shadow-normalBias={0.04}
       />
-      <directionalLight position={[20, 14, -16]} intensity={0.55} color="#8fb4ff" />
-      <Environment resolution={64} environmentIntensity={0.35}>
-        <Lightformer form="rect" intensity={2} color="#ffb77a" position={[-8, 4, 6]} scale={[10, 4, 1]} />
-        <Lightformer form="rect" intensity={1} color="#8fb4ff" position={[8, 6, -6]} scale={[10, 4, 1]} />
+      {/* Relleno magenta desde el lado de la cámara para que el contraluz no apague los frentes */}
+      <directionalLight position={[22, 12, 26]} intensity={1.1} color="#ff6f8f" />
+      <Environment resolution={64} environmentIntensity={0.4}>
+        <Lightformer form="rect" intensity={2.5} color="#ff8a4a" position={[-8, 4, -6]} scale={[10, 4, 1]} />
+        <Lightformer form="rect" intensity={1.2} color="#b04a9a" position={[8, 6, 6]} scale={[10, 4, 1]} />
       </Environment>
     </>
   )
 }
 
-interface SceneProps {
-  selectedId: string | null
-  onSelect: (hotspotId: string | null) => void
-  onReady?: () => void
+/** Avisa que la escena ya dibujó unos cuantos frames (shaders compilados): el loader puede irse. */
+function ReadySignal({ onReady }: { onReady: () => void }) {
+  const frames = useRef(0)
+  useFrame(() => {
+    if (++frames.current === 6) onReady()
+  })
+  return null
 }
 
-export default function Scene({ selectedId, onSelect, onReady }: SceneProps) {
+const TARGETS: NearTarget[] = HOTSPOT_POINTS.map((h) => ({ id: h.id, x: h.x, z: h.z, radius: h.radius }))
+
+interface SceneProps {
+  selectedId: string | null
+  nearId: string | null
+  onSelect: (hotspotId: string | null) => void
+  onNear: (id: string | null) => void
+  onReady?: () => void
+  walkerRef: MutableRefObject<ArrieroApi | null>
+}
+
+export default function Scene({ selectedId, nearId, onSelect, onNear, onReady, walkerRef }: SceneProps) {
   const selected = HOTSPOTS.find((h) => h.id === selectedId) ?? null
-  const focus = useMemo(() => (selected ? focusFor(selected) : null), [selected])
-  const walker = useRef<ArrieroApi | null>(null)
   const mainHouseId = HOUSES.find((h) => h.main)!.id
 
-  // Al abrir un proyecto, el arriero se va caminando hasta ese lugar.
+  // Al abrir un proyecto, el arriero se va caminando hasta ese lugar (el Jeep se detiene donde esté).
   useEffect(() => {
     if (!selected) return
-    const [x, z] = standPoint(selected)
-    walker.current?.walkTo(x, z)
-  }, [selected])
-
-  // Clic en el terreno: cierra el panel si está abierto; si no, el arriero camina hasta ahí.
-  const onGround = useCallback(
-    (x: number, z: number) => {
-      if (selectedId) onSelect(null)
-      else walker.current?.walkTo(x, z)
-    },
-    [selectedId, onSelect],
-  )
+    if (selected.kind === 'jeep') walkerRef.current?.walkTo(live.jeep.x - Math.sin(live.jeep.yaw) * 2.6, live.jeep.z - Math.cos(live.jeep.yaw) * 2.6)
+    else {
+      const [x, z] = standPoint(selected)
+      walkerRef.current?.walkTo(x, z)
+    }
+  }, [selected, walkerRef])
 
   return (
     <Canvas
       shadows="soft"
       dpr={[1, 2]}
-      camera={{ position: [80, 52, 92], fov: 38, near: 0.1, far: 700 }}
+      camera={{ position: [80, 90, 90], fov: 38, near: 0.1, far: 700 }}
       gl={{ antialias: true, powerPreference: 'high-performance' }}
-      onCreated={() => onReady?.()}
       onPointerMissed={() => onSelect(null)}
     >
-      <fog attach="fog" args={['#f3b98a', 110, 300]} />
+      <fog attach="fog" args={['#e0683c', 55, 190]} />
       <Suspense fallback={null}>
         <SkyDome />
         <Lights />
         <Clouds />
-        <Mountain onGround={onGround} />
+        <Mountain />
+        <Lamps />
+        <Fireflies />
 
         {/* Pueblo: casas de relleno (la principal es un hotspot) */}
         {HOUSES.filter((h) => h.id !== mainHouseId).map((h) => (
@@ -205,6 +215,26 @@ export default function Scene({ selectedId, onSelect, onReady }: SceneProps) {
         ))}
 
         {HOTSPOTS.map((h) => {
+          if (h.kind === 'jeep') {
+            // El Willys recorre los caminos solo: el hotspot viaja con él.
+            return (
+              <DrivingJeep key={h.id} paused={h.id === selectedId}>
+                {(rig) => (
+                  <Hotspot
+                    kind={h.kind}
+                    label={h.label}
+                    position={[0, 0, 0]}
+                    markerHeight={h.markerHeight}
+                    active={h.id === selectedId}
+                    near={h.id === nearId}
+                    onSelect={() => onSelect(h.id)}
+                  >
+                    <JeepWillys rig={rig} />
+                  </Hotspot>
+                )}
+              </DrivingJeep>
+            )
+          }
           const p = resolvePlacement(h)
           return (
             <Hotspot
@@ -215,6 +245,7 @@ export default function Scene({ selectedId, onSelect, onReady }: SceneProps) {
               rotationY={p.rotationY}
               markerHeight={h.markerHeight}
               active={h.id === selectedId}
+              near={h.id === nearId}
               onSelect={() => onSelect(h.id)}
             >
               {PROP_BY_KIND[h.kind]()}
@@ -222,12 +253,14 @@ export default function Scene({ selectedId, onSelect, onReady }: SceneProps) {
           )
         })}
 
-        <ArrieroWalker apiRef={walker} start={ARRIERO_START} paused={!!selectedId} />
+        <ArrieroWalker apiRef={walkerRef} start={ARRIERO_START} targets={TARGETS} onNear={onNear} />
+        <CameraRig focused={!!selectedId} />
+        <ReadySignal onReady={() => onReady?.()} />
 
-        <CameraRig focus={focus ?? null} />
         <EffectComposer multisampling={4}>
-          <Bloom intensity={0.35} luminanceThreshold={0.9} luminanceSmoothing={0.2} mipmapBlur />
-          <Vignette eskil={false} offset={0.25} darkness={0.55} />
+          <Bloom intensity={0.7} luminanceThreshold={0.8} luminanceSmoothing={0.25} mipmapBlur />
+          <TiltShift2 blur={0.14} taper={0.5} />
+          <Vignette eskil={false} offset={0.2} darkness={0.6} />
           <ToneMapping mode={ToneMappingMode.ACES_FILMIC} />
         </EffectComposer>
       </Suspense>

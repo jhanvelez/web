@@ -165,3 +165,30 @@ export const KEEP_CLEAR: readonly Circle[] = [
 
 export const isClear = (x: number, z: number, extra = 0) =>
   KEEP_CLEAR.every((c) => Math.hypot(x - c.x, z - c.z) > c.r + extra)
+
+/* ───────────── Farolas, posiciones y zonas para el pasto ───────────── */
+
+/** Una farola por plaza, del lado opuesto al camino que baja al café. */
+export const LAMPS: readonly Vec2[] = Object.values(PLAZAS).map((p) => {
+  if (p.id === 'K') return [p.x - 3.1, p.z + 1.4] as Vec2
+  const a = Math.atan2(K.z - p.z, K.x - p.x) + Math.PI
+  return [p.x + Math.cos(a) * 2.2, p.z + Math.sin(a) * 2.2] as Vec2
+})
+
+/** Centro de cada hotspot (el Jeep se mueve: su posición viva está en lib/state). */
+export const HOTSPOT_POINTS = HOTSPOTS.map((h) => {
+  const p = resolvePlacement(h)
+  return { id: h.id, kind: h.kind, label: h.label, x: p.x, z: p.z, radius: h.kind === 'house' ? 6 : 4.2 }
+})
+
+/** Sitios donde no debe crecer pasto (caminos, plazas, casas, objetos). */
+export const GRASS_AVOID: readonly Circle[] = [
+  ...Object.values(PLAZAS).map((p) => ({ x: p.x, z: p.z, r: p.cobble + 0.6 })),
+  ...HOUSES.map((h) => ({ x: h.x, z: h.z, r: 2.7 })),
+  ...HOTSPOTS.filter((h) => h.place.type !== 'house').map((h) => {
+    const p = resolvePlacement(h)
+    return { x: p.x, z: p.z, r: 1.7 }
+  }),
+  ...LAMPS.map(([x, z]) => ({ x, z, r: 0.5 })),
+  ...NETWORK.edges.flatMap((e) => e.points.map(([x, z]) => ({ x, z, r: 0.95 }))),
+]

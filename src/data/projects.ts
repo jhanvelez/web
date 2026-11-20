@@ -77,7 +77,6 @@ export const PROJECTS: readonly Project[] = [
 /**
  * Cada hotspot se coloca en polares alrededor de una plaza (A, B, C = montañas, K = café).
  * Para A/B/C el ángulo es relativo al camino que baja al café (0° = justo sobre el camino).
- * Cámara y offsets están en espacio local del objeto (+z = frente).
  */
 export const HOTSPOTS: readonly HotspotConfig[] = [
   {
@@ -89,8 +88,6 @@ export const HOTSPOTS: readonly HotspotConfig[] = [
     rotationY: 0,
     standDistance: 3.4,
     markerHeight: 5.0,
-    cameraOffset: [1, 4.2, 12.5],
-    targetOffset: [0, 2.0, 0],
   },
   {
     id: 'hs-jeep',
@@ -101,8 +98,6 @@ export const HOTSPOTS: readonly HotspotConfig[] = [
     rotationY: Math.PI - 0.6,
     standDistance: 2.4,
     markerHeight: 2.1,
-    cameraOffset: [3.6, 1.9, 3.9],
-    targetOffset: [0, 0.6, 0],
   },
   {
     id: 'hs-costal',
@@ -113,8 +108,6 @@ export const HOTSPOTS: readonly HotspotConfig[] = [
     rotationY: 0.5,
     standDistance: 1.8,
     markerHeight: 1.6,
-    cameraOffset: [3.3, 2.0, 4.4],
-    targetOffset: [0, 0.45, 0],
   },
   {
     id: 'hs-letrero',
@@ -125,8 +118,6 @@ export const HOTSPOTS: readonly HotspotConfig[] = [
     rotationY: 0,
     standDistance: 1.8,
     markerHeight: 3.0,
-    cameraOffset: [2.2, 1.4, 3.6],
-    targetOffset: [0, 1.1, 0],
   },
   {
     id: 'hs-mirador',
@@ -137,8 +128,6 @@ export const HOTSPOTS: readonly HotspotConfig[] = [
     rotationY: Math.PI,
     standDistance: -2,
     markerHeight: 3.9,
-    cameraOffset: [-4.2, 3.0, 5.2],
-    targetOffset: [0, 1.4, 0],
   },
   {
     id: 'hs-cafe',
@@ -149,8 +138,6 @@ export const HOTSPOTS: readonly HotspotConfig[] = [
     rotationY: 0,
     standDistance: 2.6,
     markerHeight: 3.6,
-    cameraOffset: [4.2, 2.6, 6.4],
-    targetOffset: [0, 1, -0.6],
   },
 ]
 

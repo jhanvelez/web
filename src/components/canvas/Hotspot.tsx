@@ -23,6 +23,8 @@ interface Props {
   rotationY?: number
   markerHeight: number
   active: boolean
+  /** El arriero está cerca: se muestra la etiqueta con la tecla F. */
+  near?: boolean
   onSelect: () => void
   children: ReactNode
 }
@@ -32,7 +34,7 @@ interface Props {
  * hover → cursor pointer + resalte + etiqueta; clic → onSelect. El marcador es un <button>
  * HTML (accesible por teclado) anclado sobre el objeto.
  */
-export function Hotspot({ kind, label, position, rotationY = 0, markerHeight, active, onSelect, children }: Props) {
+export function Hotspot({ kind, label, position, rotationY = 0, markerHeight, active, near = false, onSelect, children }: Props) {
   const [hovered, setHovered] = useState(false)
   const body = useRef<THREE.Group>(null)
   const marker = useRef<THREE.Group>(null)
@@ -69,7 +71,7 @@ export function Hotspot({ kind, label, position, rotationY = 0, markerHeight, ac
         <Html center zIndexRange={[20, 0]} style={{ pointerEvents: active ? 'none' : 'auto' }}>
           <button
             type="button"
-            className={`hotspot-btn ${hovered ? 'is-hovered' : ''} ${active ? 'is-active' : ''}`}
+            className={`hotspot-btn ${hovered ? 'is-hovered' : ''} ${active ? 'is-active' : ''} ${near ? 'is-near' : ''}`}
             aria-label={`Ver proyecto: ${label}`}
             onClick={onSelect}
             onPointerEnter={() => setHovered(true)}
@@ -79,7 +81,7 @@ export function Hotspot({ kind, label, position, rotationY = 0, markerHeight, ac
             <span className="hotspot-core">
               <Icon size={16} strokeWidth={2.4} />
             </span>
-            <span className="hotspot-label">{label}</span>
+            <span className="hotspot-label">{label}{near && <kbd className="hotspot-key">F</kbd>}</span>
           </button>
         </Html>
       </group>

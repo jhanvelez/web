@@ -14,7 +14,7 @@ body,
 
 body {
   font-family: var(--font-sans);
-  background: #f3b98a;
+  background: #3a1218;
   overscroll-behavior: none;
 }
 
@@ -72,10 +72,24 @@ canvas {
   pointer-events: none;
   transition: opacity 0.2s ease, transform 0.2s ease;
 }
+.hotspot-btn.is-near .hotspot-label,
 .hotspot-btn.is-hovered .hotspot-label,
 .hotspot-btn:focus-visible .hotspot-label {
   opacity: 1;
   transform: translate(-50%, 0);
+}
+.hotspot-btn.is-near .hotspot-core {
+  transform: scale(1.25);
+  background: #ffd36a;
+  box-shadow: 0 0 0 4px rgba(255, 211, 106, 0.35), 0 4px 18px rgba(255, 150, 60, 0.7);
+}
+.hotspot-key {
+  margin-left: 8px;
+  padding: 1px 7px;
+  border-radius: 6px;
+  background: #f2b632;
+  color: #2a1a10;
+  font: 700 12px/1.4 var(--font-sans);
 }
 .hotspot-btn.is-hovered .hotspot-core {
   transform: scale(1.18);
@@ -117,5 +131,17 @@ canvas {
   .hotspot-pulse,
   .loader-bar {
     animation: none;
+  }
+}
+
+.bean-wave {
+  animation: bean-wave 1.6s linear infinite;
+}
+@keyframes bean-wave {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100px);
   }
 }

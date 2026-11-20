@@ -29,8 +29,7 @@ export interface Project {
 
 /**
  * Un punto interactivo de la escena, enlazado a un proyecto vía `projectId`.
- * La altura (y) se calcula sobre el terreno. Cámara y offsets están en el espacio LOCAL
- * del objeto (+z = frente), así que funcionan sin importar hacia dónde mire.
+ * La altura (y) se calcula sobre el terreno. 
  */
 export interface HotspotConfig {
   id: string
@@ -44,10 +43,6 @@ export interface HotspotConfig {
   standDistance: number
   /** Altura del marcador sobre el ancla. */
   markerHeight: number
-  /** Posición de la cámara, relativa al ancla y rotada con el objeto. */
-  cameraOffset: Vec3
-  /** Punto observado por la cámara, relativo al ancla y rotado con el objeto. */
-  targetOffset: Vec3
 }
 
 export interface CameraFocus {

@@ -1,10 +1,10 @@
-import { useMemo } from 'react'
-import type { ThreeEvent } from '@react-three/fiber'
+import { useMemo, useRef } from 'react'
+import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { createRng } from '../../lib/random'
-import { isClear, NETWORK } from '../../lib/layout'
+import { GRASS_AVOID, isClear, NETWORK } from '../../lib/layout'
 import { smoothstep, terrainHeight } from '../../lib/terrain'
-import { PLAZAS, PLAZA_LIST, WORLD_RADIUS } from '../../lib/world'
+import { PLAZAS, PLAZA_LIST, PONDS, WATER_LEVEL, WORLD_RADIUS } from '../../lib/world'
 import { Instanced, type InstanceItem } from './Instanced'
 
 const RINGS = 84
@@ -49,6 +49,9 @@ function buildTerrainGeometry(): THREE.BufferGeometry {
   const high = new THREE.Color('#9ccb4f')
   const rock = new THREE.Color('#8a7152')
   const soil = new THREE.Color('#9b6b3f')
+  const sand = new THREE.Color('#e0b873')
+  const shallow = new THREE.Color('#5fd0c4')
+  const bed = new THREE.Color('#2a7a80')
   const c = new THREE.Color()
   for (let f = 0; f < p.count; f += 3) {
     const cx = (p.getX(f) + p.getX(f + 1) + p.getX(f + 2)) / 3
@@ -59,6 +62,9 @@ function buildTerrainGeometry(): THREE.BufferGeometry {
     c.copy(low).lerp(mid, smoothstep(0.6, 3.2, cy)).lerp(high, smoothstep(3.2, 6, cy))
     c.lerp(rock, smoothstep(0.22, 0.5, slope) * 0.75)
     c.lerp(soil, smoothstep(WORLD_RADIUS - 1.3, WORLD_RADIUS, r) * 0.85)
+    if (cy < WATER_LEVEL + 0.7) c.lerp(sand, smoothstep(WATER_LEVEL + 0.7, WATER_LEVEL + 0.15, cy))
+    if (cy < WATER_LEVEL + 0.1) c.lerp(shallow, smoothstep(WATER_LEVEL + 0.1, WATER_LEVEL - 0.3, cy) * 0.7)
+    if (cy < WATER_LEVEL - 0.4) c.lerp(bed, 0.8)
     c.offsetHSL((rng.next() - 0.5) * 0.02, 0, (rng.next() - 0.5) * 0.07)
     for (let k = 0; k < 3; k++) colors.set([c.r, c.g, c.b], (f + k) * 3)
   }
@@ -97,7 +103,8 @@ function useScatter() {
         const r = rMin + Math.sqrt(rng.next()) * (rMax - rMin)
         const x = Math.cos(a) * r
         const z = Math.sin(a) * r
-        if (isClear(x, z, clear)) return { x, z, y: terrainHeight(x, z) }
+        const y = terrainHeight(x, z)
+        if (y > WATER_LEVEL + 0.6 && isClear(x, z, clear)) return { x, z, y }
       }
       return null
     }
@@ -189,9 +196,8 @@ function useScatter() {
 
     // Empedrado de río: caminos (árbol) y plazas. Piedras redondeadas, densas, como en una calle colonial.
     const cobbles: InstanceItem[] = []
-    const beds: InstanceItem[] = []
     const addCobble = (x: number, z: number, big = 1) => {
-      const s = rng.range(0.15, 0.24) * big
+      const s = rng.range(0.17, 0.27) * big
       cobbles.push({
         position: [x, terrainHeight(x, z) + 0.01, z],
         rotation: [rng.range(-0.15, 0.15), rng.range(0, 3), rng.range(-0.15, 0.15)],
@@ -209,15 +215,13 @@ function useScatter() {
         const l = Math.hypot(dx, dz) || 1
         const px = -dz / l
         const pz = dx / l
-        for (let k = -3; k <= 3; k++) {
-          const lat = (k / 3) * width + rng.range(-0.09, 0.09)
+        for (let k = -4; k <= 4; k++) {
+          const lat = (k / 4) * width + rng.range(-0.09, 0.09)
           addCobble(x + px * lat + rng.range(-0.12, 0.12) * (dx / l), z + pz * lat + rng.range(-0.12, 0.12) * (dz / l))
         }
-        if (i % 2 === 0) beds.push({ position: [x, terrainHeight(x, z) - 0.005, z], scale: [width + 0.2, 0.03, width + 0.2], color: '#5a4630' })
       })
     }
     for (const pl of PLAZA_LIST) {
-      beds.push({ position: [pl.x, terrainHeight(pl.x, pl.z) - 0.005, pl.z], scale: [pl.cobble + 0.1, 0.03, pl.cobble + 0.1], color: '#5a4630' })
       const step = 0.32
       for (let x = -pl.cobble; x <= pl.cobble; x += step) {
         for (let z = -pl.cobble; z <= pl.cobble; z += step) {
@@ -228,37 +232,64 @@ function useScatter() {
       }
     }
 
-    return { palmTrunks, palmLeaves, treeTrunks, treeCanopies, bushes, cherries, rocks, flowers, cobbles, beds }
+    // Pasto en mechones dorados (como en los prados de la referencia).
+    const grass: InstanceItem[] = []
+    const GRASS = ['#b8a23a', '#9bb040', '#c9b24a', '#7ea63a', '#d1a845']
+    for (let n = 0; n < 16000 && grass.length < 9000; n++) {
+      const a = rng.next() * Math.PI * 2
+      const r = Math.sqrt(rng.next()) * maxR
+      const x = Math.cos(a) * r
+      const z = Math.sin(a) * r
+      const y = terrainHeight(x, z)
+      if (y < WATER_LEVEL + 0.45) continue
+      if (!GRASS_AVOID.every((c) => Math.hypot(x - c.x, z - c.z) > c.r)) continue
+      const s = rng.range(0.55, 1.2)
+      grass.push({
+        position: [x, y + 0.12 * s, z],
+        rotation: [rng.range(-0.25, 0.25), rng.range(0, 6), rng.range(-0.25, 0.25)],
+        scale: [s, s * rng.range(0.9, 1.6), s],
+        color: rng.pick(GRASS),
+      })
+    }
+
+    return { palmTrunks, palmLeaves, treeTrunks, treeCanopies, bushes, cherries, rocks, flowers, cobbles, grass }
   }, [])
 }
 
-interface Props {
-  /** Clic (sin arrastre) sobre el terreno. */
-  onGround?: (x: number, z: number) => void
+/** Estanque con brillo turquesa y una leve respiración de luz. */
+function Water({ x, z, r }: { x: number; z: number; r: number }) {
+  const mat = useRef<THREE.MeshStandardMaterial>(null)
+  useFrame(({ clock }) => {
+    if (mat.current) mat.current.emissiveIntensity = 0.55 + Math.sin(clock.elapsedTime * 1.3 + x) * 0.15
+  })
+  return (
+    <mesh position={[x, WATER_LEVEL, z]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+      <circleGeometry args={[r * 1.1, 40]} />
+      <meshStandardMaterial ref={mat} color="#2fb3c4" emissive="#1c93a6" emissiveIntensity={0.55} transparent opacity={0.82} roughness={0.15} metalness={0.2} />
+    </mesh>
+  )
 }
 
-export function Mountain({ onGround }: Props) {
+export function Mountain() {
   const terrain = useMemo(buildTerrainGeometry, [])
   const base = useMemo(buildRockBase, [])
   const s = useScatter()
 
-  const click = (e: ThreeEvent<MouseEvent>) => {
-    if (e.delta > 4) return // fue un arrastre de cámara
-    onGround?.(e.point.x, e.point.z)
-  }
-
   return (
     <group>
-      <mesh geometry={terrain} receiveShadow castShadow onClick={click}>
+      <mesh geometry={terrain} receiveShadow castShadow>
         <meshStandardMaterial vertexColors flatShading roughness={0.95} />
       </mesh>
       <mesh geometry={base} position={[0, -6, 0]} rotation={[Math.PI, 0, 0]} castShadow receiveShadow>
         <meshStandardMaterial color="#6f5238" flatShading roughness={1} side={THREE.DoubleSide} />
       </mesh>
 
-      <Instanced items={s.beds} castShadow={false}>
-        <cylinderGeometry args={[1, 1, 1, 14]} />
-        <meshStandardMaterial roughness={1} />
+      {PONDS.map((p, i) => (
+        <Water key={i} x={p.x} z={p.z} r={p.r} />
+      ))}
+      <Instanced items={s.grass} castShadow={false}>
+        <GrassBladeGeometry />
+        <meshStandardMaterial flatShading roughness={0.9} />
       </Instanced>
       <Instanced items={s.cobbles} castShadow={false}>
         <dodecahedronGeometry args={[1, 0]} />
@@ -310,6 +341,16 @@ function PalmLeafGeometry() {
     const g = new THREE.ConeGeometry(0.11, 1.5, 4)
     g.translate(0, 0.75, 0)
     g.scale(1, 1, 0.22)
+    return g
+  }, [])
+  return <primitive object={geo} attach="geometry" />
+}
+
+/** Mechón: cono fino con la base en el origen. */
+function GrassBladeGeometry() {
+  const geo = useMemo(() => {
+    const g = new THREE.ConeGeometry(0.07, 0.55, 4)
+    g.translate(0, 0.27, 0)
     return g
   }, [])
   return <primitive object={geo} attach="geometry" />

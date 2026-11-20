@@ -23,5 +23,19 @@ export const PLAZAS: Record<PlazaId, Plaza> = {
   C: { id: 'C', x: 2, z: 16, h: 6.5, flat: 6.2, outer: 15, cobble: 2.5 },
   K: { id: 'K', x: 0, z: 1, h: 1.5, flat: 3.8, outer: 8, cobble: 3.6 },
 }
+export interface Pond {
+  x: number
+  z: number
+  r: number
+  depth: number
+}
+/** Estanques en el valle, lejos de los caminos. */
+export const PONDS: readonly Pond[] = [
+  { x: 22, z: 8, r: 5.5, depth: 2.2 },
+  { x: -25, z: 12, r: 5, depth: 2.2 },
+  { x: 2, z: -24, r: 6, depth: 2.4 },
+]
+export const WATER_LEVEL = 0.2
+
 export const PLAZA_LIST = Object.values(PLAZAS)
 export const MOUNTAIN_IDS = ['A', 'B', 'C'] as const

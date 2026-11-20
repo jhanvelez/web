@@ -1,5 +1,7 @@
 import type { Vec2 } from '../types/portfolio'
 import { HOUSES, houseStand, NETWORK } from './layout'
+import { terrainHeight } from './terrain'
+import { WATER_LEVEL, WORLD_RADIUS } from './world'
 
 const dist = (a: Vec2, b: Vec2) => Math.hypot(a[0] - b[0], a[1] - b[1])
 
@@ -69,6 +71,17 @@ function networkPath(from: string, to: string): Vec2[] {
     id = p.id
   }
   return parts.flat()
+}
+
+/** Polilínea de caminos entre dos nodos de la red (p. ej. 'P-A' → 'P-K'). */
+export const pathBetween = networkPath
+
+/** ¿Está bloqueado caminar aquí? (borde del mundo, agua o casas). */
+export function blocked(x: number, z: number): boolean {
+  if (Math.hypot(x, z) > WORLD_RADIUS - 2.5) return true
+  if (terrainHeight(x, z) < WATER_LEVEL + 0.02) return true
+  for (const h of HOUSES) if (Math.hypot(x - h.x, z - h.z) < (h.main ? 2.9 : 2.5)) return true
+  return false
 }
 
 /** Si el destino cae dentro de una casa, se redirige a su puerta. */
