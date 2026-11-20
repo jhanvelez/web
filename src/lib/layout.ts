@@ -1,5 +1,7 @@
 import { HOTSPOTS } from '../data/projects'
-import type { Vec2 } from '../types/portfolio'
+import type { HotspotConfig, PlazaId, Vec2 } from '../types/portfolio'
+import { createRng } from './random'
+import { MOUNTAIN_IDS, PLAZAS } from './world'
 
 export interface Circle {
   x: number
@@ -7,36 +9,158 @@ export interface Circle {
   r: number
 }
 
-export const ARRIERO_POS: Vec2 = [2.2, 3.9]
-export const ARRIERO_ROT = 0.4
-
-function bezier(p0: Vec2, p1: Vec2, p2: Vec2, t: number): Vec2 {
-  const u = 1 - t
-  return [
-    u * u * p0[0] + 2 * u * t * p1[0] + t * t * p2[0],
-    u * u * p0[1] + 2 * u * t * p1[1] + t * t * p2[1],
-  ]
+export interface Placement {
+  x: number
+  z: number
+  rotationY: number
 }
 
-const curve = (a: Vec2, b: Vec2, c: Vec2): Vec2[] =>
-  Array.from({ length: 11 }, (_, i) => bezier(a, b, c, i / 10))
+const deg = (d: number) => (d * Math.PI) / 180
+const K = PLAZAS.K
 
-/** Caminos de piedra: de la puerta de la casa al letrero y al Jeep. */
-export const PATHS: readonly (readonly Vec2[])[] = [
-  curve([0, 3.7], [1.2, 6.4], [4.2, 5.6]),
-  curve([0, 3.7], [-2.2, 6.0], [-4.3, 4.9]),
-]
+/** Yaw para que el frente (+z) mire desde (x, z) hacia (tx, tz). */
+const facing = (x: number, z: number, tx: number, tz: number) => Math.atan2(tx - x, tz - z)
+export const frontOf = (ry: number): Vec2 => [Math.sin(ry), Math.cos(ry)]
 
-/** Zonas libres de vegetación y rocas. */
+/* ───────────── Casas del pueblo ───────────── */
+
+export const HOUSE_RING = 5.6
+export const HOUSE_SCALE = 0.85
+
+export interface HouseDef extends Placement {
+  id: string
+  plaza: PlazaId
+  variant: number
+  floors: 1 | 2
+  scale: number
+  main: boolean
+}
+
+const COUNTS: Record<'A' | 'B' | 'C', number> = { A: 5, B: 5, C: 4 }
+
+function buildHouses(): HouseDef[] {
+  const out: HouseDef[] = []
+  let v = 0
+  for (const id of MOUNTAIN_IDS) {
+    const p = PLAZAS[id]
+    const toK = Math.atan2(K.z - p.z, K.x - p.x)
+    const n = COUNTS[id]
+    for (let i = 0; i < n; i++) {
+      // Se deja libre un sector hacia el café, por donde sube el camino.
+      const a = toK + deg(40) + ((i + 0.5) * deg(280)) / n
+      const x = p.x + Math.cos(a) * HOUSE_RING
+      const z = p.z + Math.sin(a) * HOUSE_RING
+      out.push({
+        id: `${id}${i}`,
+        plaza: id,
+        x,
+        z,
+        rotationY: facing(x, z, p.x, p.z),
+        variant: v++ % 5,
+        floors: i % 3 === 2 ? 1 : 2,
+        scale: HOUSE_SCALE,
+        main: false,
+      })
+    }
+  }
+  // Casa principal: la de dos pisos de la montaña A que mejor se ve desde la cámara inicial.
+  const main = out
+    .filter((h) => h.plaza === 'A' && h.floors === 2)
+    .reduce((best, h) => (h.x + h.z < best.x + best.z ? h : best))
+  main.main = true
+  main.variant = 4
+  main.scale = 1
+  return out
+}
+export const HOUSES: readonly HouseDef[] = buildHouses()
+export const MAIN_HOUSE = HOUSES.find((h) => h.main)!
+
+/* ───────────── Colocación de hotspots ───────────── */
+
+export function resolvePlacement(h: HotspotConfig): Placement {
+  if (h.place.type === 'house') {
+    return { x: MAIN_HOUSE.x, z: MAIN_HOUSE.z, rotationY: MAIN_HOUSE.rotationY + h.rotationY }
+  }
+  const { around, radius, angleDeg } = h.place
+  const p = PLAZAS[around]
+  const base = around === 'K' ? 0 : Math.atan2(K.z - p.z, K.x - p.x)
+  const a = base + deg(angleDeg)
+  const x = p.x + Math.cos(a) * radius
+  const z = p.z + Math.sin(a) * radius
+  const face = radius === 0 ? 0 : facing(x, z, p.x, p.z)
+  return { x, z, rotationY: face + h.rotationY }
+}
+
+export function standPoint(h: HotspotConfig): Vec2 {
+  const pl = resolvePlacement(h)
+  const [fx, fz] = frontOf(pl.rotationY)
+  return [pl.x + fx * h.standDistance, pl.z + fz * h.standDistance]
+}
+
+export const houseStand = (h: HouseDef): Vec2 => {
+  const [fx, fz] = frontOf(h.rotationY)
+  return [h.x + fx * 3.2, h.z + fz * 3.2]
+}
+
+/* ───────────── Red de caminos (árbol) ───────────── */
+
+export interface NavNode {
+  id: string
+  x: number
+  z: number
+}
+export interface NavEdge {
+  a: string
+  b: string
+  points: Vec2[]
+}
+
+/** Camino sinuoso entre dos puntos, muestreado cada ~0.6 u. */
+function windingPath(a: Vec2, b: Vec2, amp: number, seed: number): Vec2[] {
+  const len = Math.hypot(b[0] - a[0], b[1] - a[1])
+  const n = Math.max(2, Math.ceil(len / 0.6))
+  const nx = -(b[1] - a[1]) / len
+  const nz = (b[0] - a[0]) / len
+  return Array.from({ length: n + 1 }, (_, i) => {
+    const t = i / n
+    const off = amp * Math.sin(t * Math.PI) * Math.sin(t * 3.2 + seed)
+    return [a[0] + (b[0] - a[0]) * t + nx * off, a[1] + (b[1] - a[1]) * t + nz * off] as Vec2
+  })
+}
+
+function buildNetwork() {
+  const nodes: NavNode[] = []
+  const edges: NavEdge[] = []
+  const rng = createRng(5)
+  for (const p of Object.values(PLAZAS)) nodes.push({ id: `P-${p.id}`, x: p.x, z: p.z })
+  // Troncal: cada montaña baja al café.
+  for (const id of MOUNTAIN_IDS) {
+    const p = PLAZAS[id]
+    edges.push({ a: `P-${id}`, b: 'P-K', points: windingPath([p.x, p.z], [K.x, K.z], 1.1, rng.range(0, 6)) })
+  }
+  // Ramas: cada casa sale a la plaza de su montaña.
+  for (const h of HOUSES) {
+    const s = houseStand(h)
+    const p = PLAZAS[h.plaza]
+    nodes.push({ id: `H-${h.id}`, x: s[0], z: s[1] })
+    edges.push({ a: `H-${h.id}`, b: `P-${h.plaza}`, points: windingPath(s, [p.x, p.z], 0.25, rng.range(0, 6)) })
+  }
+  return { nodes, edges }
+}
+export const NETWORK = buildNetwork()
+
+/* ───────────── Zonas libres ───────────── */
+
+export const ARRIERO_START: Vec2 = [K.x + 2.6, K.z + 2.6]
+
 export const KEEP_CLEAR: readonly Circle[] = [
-  { x: 0, z: 0.4, r: 4.8 },
-  { x: ARRIERO_POS[0], z: ARRIERO_POS[1], r: 1.2 },
-  ...HOTSPOTS.filter((h) => h.kind !== 'house').map((h) => ({
-    x: h.position[0],
-    z: h.position[1],
-    r: 2.7,
-  })),
-  ...PATHS.flat().map(([x, z]) => ({ x, z, r: 0.8 })),
+  ...Object.values(PLAZAS).map((p) => ({ x: p.x, z: p.z, r: p.id === 'K' ? 5.4 : 7.9 })),
+  ...HOUSES.map((h) => ({ x: h.x, z: h.z, r: 3.1 })),
+  ...HOTSPOTS.filter((h) => h.place.type !== 'house').map((h) => {
+    const p = resolvePlacement(h)
+    return { x: p.x, z: p.z, r: 2.3 }
+  }),
+  ...NETWORK.edges.flatMap((e) => e.points.map(([x, z]) => ({ x, z, r: 0.9 }))),
 ]
 
 export const isClear = (x: number, z: number, extra = 0) =>

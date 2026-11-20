@@ -4,7 +4,7 @@ import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import type { CameraFocus, Vec3 } from '../../types/portfolio'
 
-export const HOME: CameraFocus = { position: [15, 9.5, 17], target: [0, 2.4, 0] }
+export const HOME: CameraFocus = { position: [52, 35, 61], target: [0, 3, 0] }
 
 interface Props {
   focus: CameraFocus | null
@@ -67,7 +67,7 @@ export function CameraRig({ focus }: Props) {
       enableDamping
       dampingFactor={0.07}
       minDistance={2.5}
-      maxDistance={34}
+      maxDistance={125}
       minPolarAngle={0.3}
       maxPolarAngle={Math.PI / 2 - 0.05}
       rotateSpeed={0.6}

@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { ArrowUpRight, ChevronLeft, ChevronRight, GitFork, Star, X } from 'lucide-react'
-import { Github } from './BrandIcons'
+import { Github, Linkedin } from './BrandIcons'
+import { PROFILE } from '../../data/profile'
 import type { GitHubRepo, Project } from '../../types/portfolio'
 import type { UseGitHubRepos } from '../../hooks/useGitHubRepos'
 
@@ -18,6 +19,7 @@ const CATEGORY_LABEL: Record<Project['category'], string> = {
   mobile: 'Móvil',
   oss: 'Open Source',
   data: 'Datos',
+  contact: 'Contacto',
 }
 
 const fmtDate = (iso: string) =>
@@ -108,14 +110,18 @@ export function ProjectDrawer({ project, github, onClose, onPrev, onNext }: Prop
               </ul>
             )}
 
-            <h3 className="mt-6 text-xs font-semibold uppercase tracking-wider text-[#3b2417]/60">Stack</h3>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {project.stack.map((s) => (
-                <span key={s} className="rounded-full border border-[#3b2417]/15 bg-white/70 px-3 py-1 text-sm">
-                  {s}
-                </span>
-              ))}
-            </div>
+            {project.stack.length > 0 && (
+              <>
+                <h3 className="mt-6 text-xs font-semibold uppercase tracking-wider text-[#3b2417]/60">Stack</h3>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {project.stack.map((s) => (
+                    <span key={s} className="rounded-full border border-[#3b2417]/15 bg-white/70 px-3 py-1 text-sm">
+                      {s}
+                    </span>
+                  ))}
+                </div>
+              </>
+            )}
 
             {live && (
               <div className="mt-5 flex flex-wrap items-center gap-4 text-sm text-[#3b2417]/70">
@@ -143,6 +149,26 @@ export function ProjectDrawer({ project, github, onClose, onPrev, onNext }: Prop
               </div>
             )}
 
+            {project.category === 'contact' ? (
+              <div className="mt-6 flex flex-wrap gap-3">
+                <a
+                  href={PROFILE.linkedinUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 rounded-full bg-[#1f5fa8] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#b8472f]"
+                >
+                  <Linkedin size={16} /> LinkedIn
+                </a>
+                <a
+                  href={PROFILE.githubUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 rounded-full bg-[#3b2417] px-5 py-2.5 text-sm font-semibold text-[#f6ecd8] transition hover:bg-[#b8472f]"
+                >
+                  <Github size={16} /> GitHub
+                </a>
+              </div>
+            ) : (
             <div className="mt-6 flex flex-wrap gap-3">
               <a
                 href={live?.html_url ?? project.repoUrl}
@@ -163,6 +189,7 @@ export function ProjectDrawer({ project, github, onClose, onPrev, onNext }: Prop
                 </a>
               )}
             </div>
+            )}
           </div>
 
           <div className="flex items-center justify-between border-t border-[#3b2417]/10 px-4 py-3 text-sm">

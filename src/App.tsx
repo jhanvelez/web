@@ -44,7 +44,7 @@ export default function App() {
 
       {!selectedId && ready && (
         <p className="pointer-events-none fixed inset-x-0 bottom-6 z-20 text-center text-sm text-white/90 drop-shadow-[0_1px_6px_rgba(0,0,0,0.5)]">
-          Arrastra para girar · rueda para acercar · toca los marcadores para ver mis proyectos
+          Arrastra para girar · rueda para acercar · toca un marcador para ver un proyecto · haz clic en el terreno para que el arriero camine
         </p>
       )}
 

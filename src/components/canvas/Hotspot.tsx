@@ -2,7 +2,7 @@ import { useRef, useState, type ReactNode } from 'react'
 import { Html, useCursor } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
-import { Briefcase, Eye, Home, Smartphone, type LucideIcon } from 'lucide-react'
+import { Briefcase, Coffee, Eye, Home, Smartphone, type LucideIcon } from 'lucide-react'
 import { Github } from '../ui/BrandIcons'
 import type { HotspotKind, Vec3 } from '../../types/portfolio'
 
@@ -13,6 +13,7 @@ const ICONS: Record<HotspotKind, IconComp> = {
   sack: Smartphone,
   sign: Github,
   viewpoint: Eye,
+  cafe: Coffee,
 }
 
 interface Props {

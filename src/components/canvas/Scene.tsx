@@ -1,16 +1,17 @@
-import { Suspense, useMemo, useRef, type ReactNode } from 'react'
+import { Suspense, useCallback, useEffect, useMemo, useRef, type ReactNode } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { Environment, Lightformer } from '@react-three/drei'
 import { Bloom, EffectComposer, ToneMapping, Vignette } from '@react-three/postprocessing'
 import { ToneMappingMode } from 'postprocessing'
 import * as THREE from 'three'
 import { HOTSPOTS } from '../../data/projects'
-import { ARRIERO_POS, ARRIERO_ROT } from '../../lib/layout'
+import { ARRIERO_START, HOUSES, frontOf, resolvePlacement, standPoint } from '../../lib/layout'
 import { createRng } from '../../lib/random'
 import { terrainHeight } from '../../lib/terrain'
 import type { CameraFocus, HotspotConfig, HotspotKind, Vec3 } from '../../types/portfolio'
-import { Arriero } from './Arriero'
+import { ArrieroWalker, type ArrieroApi } from './Arriero'
 import { CameraRig } from './CameraRig'
+import { CoffeeCorner } from './CoffeeCorner'
 import { ColombianHouse } from './ColombianHouse'
 import { Hotspot } from './Hotspot'
 import { Mountain } from './Mountain'
@@ -19,20 +20,29 @@ import { CoffeeSack, FincaSign, JeepWillys, Viewpoint } from './Props'
 const SUN_DIR = new THREE.Vector3(-14, 6.5, 11).normalize()
 
 const PROP_BY_KIND: Record<HotspotKind, () => ReactNode> = {
-  house: () => <ColombianHouse />,
+  house: () => <ColombianHouse palette={4} floors={2} detail="full" scale={1} />,
   jeep: () => <JeepWillys />,
   sack: () => <CoffeeSack />,
   sign: () => <FincaSign />,
   viewpoint: () => <Viewpoint />,
+  cafe: () => <CoffeeCorner />,
 }
 
-const anchorOf = (h: HotspotConfig): Vec3 => [h.position[0], terrainHeight(h.position[0], h.position[1]), h.position[1]]
+/** Rota un offset local (x, z) por el yaw del objeto. */
+function rotate([x, y, z]: Vec3, ry: number): Vec3 {
+  const [fx, fz] = frontOf(ry) // (sin, cos)
+  return [x * fz + z * fx, y, -x * fx + z * fz]
+}
 
 export function focusFor(h: HotspotConfig): CameraFocus {
-  const [ax, ay, az] = anchorOf(h)
-  const [cx, cy, cz] = h.cameraOffset
-  const [tx, ty, tz] = h.targetOffset
-  return { position: [ax + cx, ay + cy, az + cz], target: [ax + tx, ay + ty, az + tz] }
+  const p = resolvePlacement(h)
+  const ay = terrainHeight(p.x, p.z)
+  const c = rotate(h.cameraOffset, p.rotationY)
+  const t = rotate(h.targetOffset, p.rotationY)
+  return {
+    position: [p.x + c[0], ay + c[1], p.z + c[2]],
+    target: [p.x + t[0], ay + t[1], p.z + t[2]],
+  }
 }
 
 /** Cielo de atardecer andino: degradado + disco solar (sin texturas externas). */
@@ -47,7 +57,7 @@ function SkyDome() {
     [],
   )
   return (
-    <mesh scale={160} renderOrder={-1}>
+    <mesh scale={300} renderOrder={-1}>
       <sphereGeometry args={[1, 32, 20]} />
       <shaderMaterial
         side={THREE.BackSide}
@@ -78,25 +88,25 @@ function SkyDome() {
   )
 }
 
-/** Nubes low-poly que derivan lentamente alrededor de la montaña. */
+/** Nubes low-poly que derivan lentamente alrededor del diorama. */
 function Clouds() {
   const group = useRef<THREE.Group>(null)
   const clouds = useMemo(() => {
     const rng = createRng(99)
-    return Array.from({ length: 9 }, (_, i) => {
-      const a = (i / 9) * Math.PI * 2 + rng.range(-0.3, 0.3)
-      const r = rng.range(40, 58)
+    return Array.from({ length: 11 }, (_, i) => {
+      const a = (i / 11) * Math.PI * 2 + rng.range(-0.3, 0.3)
+      const r = rng.range(78, 110)
       return {
-        pos: [Math.cos(a) * r, rng.range(14, 24), Math.sin(a) * r] as Vec3,
+        pos: [Math.cos(a) * r, rng.range(16, 30), Math.sin(a) * r] as Vec3,
         puffs: Array.from({ length: 5 }, (_, k) => ({
-          p: [k * 1.3 - 2.6 + rng.range(-0.3, 0.3), rng.range(-0.2, 0.5), rng.range(-0.7, 0.7)] as Vec3,
-          s: rng.range(1.6, 3.0),
+          p: [k * 1.9 - 3.8 + rng.range(-0.4, 0.4), rng.range(-0.3, 0.7), rng.range(-1, 1)] as Vec3,
+          s: rng.range(2, 4),
         })),
       }
     })
   }, [])
   useFrame((_, dt) => {
-    if (group.current) group.current.rotation.y += dt * 0.012
+    if (group.current) group.current.rotation.y += dt * 0.01
   })
   return (
     <group ref={group}>
@@ -120,24 +130,21 @@ function Lights() {
       <hemisphereLight args={['#ffd9b0', '#4d6b3a', 0.7]} />
       <ambientLight intensity={0.25} color="#ffe2c8" />
       <directionalLight
-        position={SUN_DIR.clone().multiplyScalar(20).toArray()}
+        position={SUN_DIR.clone().multiplyScalar(60).toArray()}
         intensity={3.2}
         color="#ffb77a"
         castShadow
-        shadow-mapSize={[2048, 2048]}
-        shadow-camera-left={-16}
-        shadow-camera-right={16}
-        shadow-camera-top={16}
-        shadow-camera-bottom={-16}
+        shadow-mapSize={[4096, 4096]}
+        shadow-camera-left={-44}
+        shadow-camera-right={44}
+        shadow-camera-top={44}
+        shadow-camera-bottom={-44}
         shadow-camera-near={1}
-        shadow-camera-far={60}
-        shadow-bias={-0.0004}
-        shadow-normalBias={0.03}
-        shadow-radius={5}
+        shadow-camera-far={170}
+        shadow-bias={-0.0003}
+        shadow-normalBias={0.04}
       />
-      {/* Relleno frío desde el lado opuesto para que la sombra no quede muerta */}
-      <directionalLight position={[10, 6, -8]} intensity={0.55} color="#8fb4ff" />
-      {/* Entorno procedural para reflejos suaves, sin HDR remoto */}
+      <directionalLight position={[20, 14, -16]} intensity={0.55} color="#8fb4ff" />
       <Environment resolution={64} environmentIntensity={0.35}>
         <Lightformer form="rect" intensity={2} color="#ffb77a" position={[-8, 4, 6]} scale={[10, 4, 1]} />
         <Lightformer form="rect" intensity={1} color="#8fb4ff" position={[8, 6, -6]} scale={[10, 4, 1]} />
@@ -155,41 +162,68 @@ interface SceneProps {
 export default function Scene({ selectedId, onSelect, onReady }: SceneProps) {
   const selected = HOTSPOTS.find((h) => h.id === selectedId) ?? null
   const focus = useMemo(() => (selected ? focusFor(selected) : null), [selected])
-  const houseY = terrainHeight(0, 0)
-  const arrieroY = terrainHeight(ARRIERO_POS[0], ARRIERO_POS[1])
+  const walker = useRef<ArrieroApi | null>(null)
+  const mainHouseId = HOUSES.find((h) => h.main)!.id
+
+  // Al abrir un proyecto, el arriero se va caminando hasta ese lugar.
+  useEffect(() => {
+    if (!selected) return
+    const [x, z] = standPoint(selected)
+    walker.current?.walkTo(x, z)
+  }, [selected])
+
+  // Clic en el terreno: cierra el panel si está abierto; si no, el arriero camina hasta ahí.
+  const onGround = useCallback(
+    (x: number, z: number) => {
+      if (selectedId) onSelect(null)
+      else walker.current?.walkTo(x, z)
+    },
+    [selectedId, onSelect],
+  )
 
   return (
     <Canvas
       shadows="soft"
       dpr={[1, 2]}
-      camera={{ position: [28, 18, 32], fov: 38, near: 0.1, far: 400 }}
+      camera={{ position: [80, 52, 92], fov: 38, near: 0.1, far: 700 }}
       gl={{ antialias: true, powerPreference: 'high-performance' }}
       onCreated={() => onReady?.()}
       onPointerMissed={() => onSelect(null)}
     >
-      <fog attach="fog" args={['#f3b98a', 55, 150]} />
+      <fog attach="fog" args={['#f3b98a', 110, 300]} />
       <Suspense fallback={null}>
         <SkyDome />
         <Lights />
         <Clouds />
-        <Mountain />
-        <group position={[ARRIERO_POS[0], arrieroY, ARRIERO_POS[1]]} rotation={[0, ARRIERO_ROT, 0]}>
-          <Arriero />
-        </group>
-        {HOTSPOTS.map((h) => (
-          <Hotspot
-            key={h.id}
-            kind={h.kind}
-            label={h.label}
-            position={h.kind === 'house' ? [0, houseY, 0] : anchorOf(h)}
-            rotationY={h.rotationY}
-            markerHeight={h.markerHeight}
-            active={h.id === selectedId}
-            onSelect={() => onSelect(h.id)}
-          >
-            {PROP_BY_KIND[h.kind]()}
-          </Hotspot>
+        <Mountain onGround={onGround} />
+
+        {/* Pueblo: casas de relleno (la principal es un hotspot) */}
+        {HOUSES.filter((h) => h.id !== mainHouseId).map((h) => (
+          <group key={h.id} position={[h.x, terrainHeight(h.x, h.z), h.z]} rotation={[0, h.rotationY, 0]}>
+            <ColombianHouse palette={h.variant} floors={h.floors} detail="lite" scale={h.scale} />
+          </group>
         ))}
+
+        {HOTSPOTS.map((h) => {
+          const p = resolvePlacement(h)
+          return (
+            <Hotspot
+              key={h.id}
+              kind={h.kind}
+              label={h.label}
+              position={[p.x, terrainHeight(p.x, p.z), p.z]}
+              rotationY={p.rotationY}
+              markerHeight={h.markerHeight}
+              active={h.id === selectedId}
+              onSelect={() => onSelect(h.id)}
+            >
+              {PROP_BY_KIND[h.kind]()}
+            </Hotspot>
+          )
+        })}
+
+        <ArrieroWalker apiRef={walker} start={ARRIERO_START} paused={!!selectedId} />
+
         <CameraRig focus={focus ?? null} />
         <EffectComposer multisampling={4}>
           <Bloom intensity={0.35} luminanceThreshold={0.9} luminanceSmoothing={0.2} mipmapBlur />
@@ -200,4 +234,3 @@ export default function Scene({ selectedId, onSelect, onReady }: SceneProps) {
     </Canvas>
   )
 }
-

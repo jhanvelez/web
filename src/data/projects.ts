@@ -45,7 +45,7 @@ export const PROJECTS: readonly Project[] = [
   {
     id: 'open-source',
     title: 'Repositorios destacados',
-    tagline: 'El letrero de la finca: todo mi código abierto en GitHub.',
+    tagline: 'El letrero del camino: todo mi código abierto en GitHub.',
     description: 'Una muestra de mis repositorios públicos, cargados en vivo desde la API de GitHub.',
     category: 'oss',
     stack: ['Git', 'GitHub Actions', 'Open Source'],
@@ -62,28 +62,44 @@ export const PROJECTS: readonly Project[] = [
     stack: ['React', 'D3', 'Python', 'SQL'],
     repoUrl: REPOS,
   },
+  {
+    id: 'contacto',
+    title: 'Tomemos un tinto',
+    tagline: 'El rincón del café: conversemos de tu próximo proyecto.',
+    description:
+      'Estoy abierto a nuevos proyectos y colaboraciones. Escríbeme por LinkedIn o revisa mi código en GitHub y armamos algo bueno, con tinto de por medio.',
+    category: 'contact',
+    stack: [],
+    repoUrl: PROFILE.githubUrl,
+  },
 ]
 
-/** Coordenadas (x, z) sobre el terreno. Las cámaras son offsets relativos al ancla del objeto. */
+/**
+ * Cada hotspot se coloca en polares alrededor de una plaza (A, B, C = montañas, K = café).
+ * Para A/B/C el ángulo es relativo al camino que baja al café (0° = justo sobre el camino).
+ * Cámara y offsets están en espacio local del objeto (+z = frente).
+ */
 export const HOTSPOTS: readonly HotspotConfig[] = [
   {
     id: 'hs-casa',
     projectId: 'plataforma-fullstack',
     kind: 'house',
     label: 'Plataforma Full-Stack',
-    position: [0, 0],
+    place: { type: 'house' },
     rotationY: 0,
-    markerHeight: 5.9,
-    cameraOffset: [6.8, 4.6, 14],
-    targetOffset: [0, 2.6, 0],
+    standDistance: 3.4,
+    markerHeight: 5.0,
+    cameraOffset: [1, 4.2, 12.5],
+    targetOffset: [0, 2.0, 0],
   },
   {
     id: 'hs-jeep',
     projectId: 'microservicios',
     kind: 'jeep',
     label: 'Microservicios',
-    position: [-5.6, 4.6],
-    rotationY: 0.8,
+    place: { type: 'polar', around: 'B', radius: 4.2, angleDeg: 30 },
+    rotationY: Math.PI - 0.6,
+    standDistance: 2.4,
     markerHeight: 2.1,
     cameraOffset: [3.6, 1.9, 3.9],
     targetOffset: [0, 0.6, 0],
@@ -93,19 +109,21 @@ export const HOTSPOTS: readonly HotspotConfig[] = [
     projectId: 'app-movil',
     kind: 'sack',
     label: 'App Móvil',
-    position: [-4.5, 1.6],
+    place: { type: 'polar', around: 'A', radius: 4.2, angleDeg: -30 },
     rotationY: 0.5,
+    standDistance: 1.8,
     markerHeight: 1.6,
     cameraOffset: [3.3, 2.0, 4.4],
-    targetOffset: [0, 0.4, 0],
+    targetOffset: [0, 0.45, 0],
   },
   {
     id: 'hs-letrero',
     projectId: 'open-source',
     kind: 'sign',
     label: 'Repositorios',
-    position: [5.0, 5.4],
-    rotationY: 0.6,
+    place: { type: 'polar', around: 'K', radius: 7, angleDeg: 94 },
+    rotationY: 0,
+    standDistance: 1.8,
     markerHeight: 3.0,
     cameraOffset: [2.2, 1.4, 3.6],
     targetOffset: [0, 1.1, 0],
@@ -115,11 +133,24 @@ export const HOTSPOTS: readonly HotspotConfig[] = [
     projectId: 'analitica',
     kind: 'viewpoint',
     label: 'Dashboards',
-    position: [-6.2, -3.8],
-    rotationY: 0.6,
+    place: { type: 'polar', around: 'B', radius: 9.5, angleDeg: 110 },
+    rotationY: Math.PI,
+    standDistance: -2,
     markerHeight: 3.9,
     cameraOffset: [-4.2, 3.0, 5.2],
     targetOffset: [0, 1.4, 0],
+  },
+  {
+    id: 'hs-cafe',
+    projectId: 'contacto',
+    kind: 'cafe',
+    label: 'Café · Contacto',
+    place: { type: 'polar', around: 'K', radius: 0, angleDeg: 0 },
+    rotationY: 0,
+    standDistance: 2.6,
+    markerHeight: 3.6,
+    cameraOffset: [4.2, 2.6, 6.4],
+    targetOffset: [0, 1, -0.6],
   },
 ]
 
