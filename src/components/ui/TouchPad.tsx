@@ -15,7 +15,7 @@ function Btn({ dir, children, className }: { dir: Dir; children: React.ReactNode
       onPointerLeave={on(false)}
       onPointerCancel={on(false)}
       onContextMenu={(e) => e.preventDefault()}
-      className={`absolute grid size-14 touch-none select-none place-items-center rounded-2xl bg-[#2a1018]/70 text-[#ffd36a] backdrop-blur-md active:bg-[#f2b632] active:text-[#2a1018] ${className}`}
+      className={`absolute grid size-14 touch-none select-none place-items-center rounded-2xl bg-[#0b0d10]/70 text-[#ffd36a] backdrop-blur-md active:bg-[#ffb454] active:text-[#0b0d10] ${className}`}
     >
       {children}
     </button>
@@ -48,7 +48,7 @@ export function TouchPad({ canInteract, onInteract }: Props) {
           type="button"
           onPointerDown={() => input.pressJump()}
           aria-label="Saltar"
-          className="grid size-14 touch-none place-items-center rounded-full bg-[#2a1018]/70 text-[#ffd36a] backdrop-blur-md active:bg-[#f2b632] active:text-[#2a1018]"
+          className="grid size-14 touch-none place-items-center rounded-full bg-[#0b0d10]/70 text-[#ffd36a] backdrop-blur-md active:bg-[#ffb454] active:text-[#0b0d10]"
         >
           <ChevronsUp />
         </button>
@@ -57,7 +57,7 @@ export function TouchPad({ canInteract, onInteract }: Props) {
           onClick={onInteract}
           disabled={!canInteract}
           aria-label="Interactuar"
-          className="grid size-14 place-items-center rounded-full bg-[#f2b632] text-[#2a1018] shadow-lg transition disabled:opacity-30"
+          className="grid size-14 place-items-center rounded-full bg-[#ffb454] text-[#0b0d10] shadow-lg transition disabled:opacity-30"
         >
           <Coffee />
         </button>

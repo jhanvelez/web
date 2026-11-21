@@ -41,7 +41,7 @@ export const SPECIES: Record<SpeciesId, SpeciesInfo> = {
     petalSize: 0.11,
     fall: 3.2,
     carpet: true,
-    weight: 22,
+    weight: 15,
   },
   rosado: {
     id: 'rosado',
@@ -74,7 +74,7 @@ export const SPECIES: Record<SpeciesId, SpeciesInfo> = {
     petalSize: 0.2,
     fall: 1.2,
     carpet: false,
-    weight: 14,
+    weight: 30,
   },
   navajuelo: {
     id: 'navajuelo',
@@ -190,7 +190,7 @@ function buildTrees(): TreeInst[] {
 
   // Bosque disperso.
   const bag = SPECIES_LIST.flatMap((s) => Array<SpeciesId>(s.weight).fill(s.id))
-  for (let n = 0; n < 1800 && out.length < 340; n++) {
+  for (let n = 0; n < 1800 && out.length < 270; n++) {
     const a = rng.next() * Math.PI * 2
     const r = Math.sqrt(rng.next()) * (WORLD_RADIUS - 3)
     const x = Math.cos(a) * r
@@ -198,8 +198,8 @@ function buildTrees(): TreeInst[] {
     const species = bag[Math.floor(rng.next() * bag.length)]
     if (free(x, z, species === 'pino' ? 1.9 : 2.5)) add(species, x, z)
   }
-  // Se deja el 75 % (se quita 1 de cada 4) para un bosque más ligero y despejado.
-  return out.filter((_, i) => i % 4 !== 3).map((t, i) => ({ ...t, id: i }))
+  // Bosque ligero y despejado: se quita 1 de cada 4 y además 1 de cada 6 de lo que queda.
+  return out.filter((_, i) => i % 4 !== 3).filter((_, i) => i % 6 !== 5).map((t, i) => ({ ...t, id: i }))
 }
 
 export const TREES: readonly TreeInst[] = buildTrees()

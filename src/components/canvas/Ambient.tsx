@@ -56,11 +56,11 @@ function Lamp({ x, z }: { x: number; z: number }) {
     <group position={[x, y, z]}>
       <mesh position={[0, 1.1, 0]} castShadow>
         <cylinderGeometry args={[0.05, 0.07, 2.2, 6]} />
-        <meshStandardMaterial color="#3a2b3a" roughness={0.8} flatShading />
+        <meshStandardMaterial color="#0e0e12" roughness={0.8} flatShading />
       </mesh>
       <mesh position={[0, 2.3, 0]} castShadow>
         <boxGeometry args={[0.42, 0.06, 0.42]} />
-        <meshStandardMaterial color="#3a2b3a" flatShading />
+        <meshStandardMaterial color="#0e0e12" flatShading />
       </mesh>
       <mesh position={[0, 2.12, 0]}>
         <boxGeometry args={[0.3, 0.3, 0.3]} />
@@ -68,7 +68,7 @@ function Lamp({ x, z }: { x: number; z: number }) {
       </mesh>
       <mesh position={[0, 1.93, 0]}>
         <boxGeometry args={[0.36, 0.06, 0.36]} />
-        <meshStandardMaterial color="#3a2b3a" flatShading />
+        <meshStandardMaterial color="#0e0e12" flatShading />
       </mesh>
       <pointLight ref={light} position={[0, 2.1, 0]} color="#ffa94d" intensity={9} distance={11} decay={2} />
     </group>

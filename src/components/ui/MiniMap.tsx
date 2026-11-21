@@ -110,7 +110,7 @@ export function MiniMap({ open, onToggle, onSelect }: Props) {
         g.closePath()
         g.fillStyle = '#fff'
         g.fill()
-        g.strokeStyle = '#2a1018'
+        g.strokeStyle = '#0b0d10'
         g.lineWidth = 2
         g.stroke()
       }
@@ -153,17 +153,17 @@ export function MiniMap({ open, onToggle, onSelect }: Props) {
 
   return (
     <>
-      {open && <div className="fixed inset-0 z-40 bg-[#2a1018]/70 backdrop-blur-sm" onClick={onToggle} aria-hidden />}
+      {open && <div className="fixed inset-0 z-40 bg-[#0b0d10]/70 backdrop-blur-sm" onClick={onToggle} aria-hidden />}
       <div
         className={
           open
-            ? 'fixed left-1/2 top-1/2 z-50 aspect-square w-[min(88vw,82vh)] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-3xl border-4 border-[#ffd36a] bg-[#2a1018] shadow-2xl'
-            : 'pointer-events-auto fixed bottom-4 left-4 z-30 size-[150px] overflow-hidden rounded-2xl border-2 border-[#ffd36a]/80 bg-[#2a1018] shadow-xl max-[767px]:size-[104px]'
+            ? 'fixed left-1/2 top-1/2 z-50 aspect-square w-[min(88vw,82vh)] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-3xl border-4 border-[#ffd36a] bg-[#0b0d10] shadow-2xl'
+            : 'pointer-events-auto fixed bottom-4 left-4 z-30 size-[150px] overflow-hidden rounded-2xl border-2 border-[#ffd36a]/80 bg-[#0b0d10] shadow-xl max-[767px]:size-[104px]'
         }
       >
         <canvas ref={canvas} width={open ? 720 : 300} height={open ? 720 : 300} onClick={onClick} className="size-full cursor-pointer" aria-label="Mapa del mundo" />
         {open && (
-          <button type="button" onClick={onToggle} aria-label="Cerrar mapa" className="absolute right-3 top-3 grid size-9 place-items-center rounded-full bg-[#2a1018]/80 text-white">
+          <button type="button" onClick={onToggle} aria-label="Cerrar mapa" className="absolute right-3 top-3 grid size-9 place-items-center rounded-full bg-[#0b0d10]/80 text-white">
             <X size={18} />
           </button>
         )}
@@ -173,7 +173,7 @@ export function MiniMap({ open, onToggle, onSelect }: Props) {
           type="button"
           onClick={onToggle}
           aria-label="Abrir mapa (M)"
-          className="pointer-events-auto fixed bottom-4 left-[172px] z-30 grid size-10 place-items-center rounded-full bg-[#2a1018]/80 text-[#ffd36a] shadow-lg backdrop-blur-md transition hover:bg-[#f2b632] hover:text-[#2a1018] max-[767px]:left-[126px]"
+          className="pointer-events-auto fixed bottom-4 left-[172px] z-30 grid size-10 place-items-center rounded-full bg-[#0b0d10]/80 text-[#ffd36a] shadow-lg backdrop-blur-md transition hover:bg-[#ffb454] hover:text-[#0b0d10] max-[767px]:left-[126px]"
         >
           <MapIcon size={18} />
         </button>

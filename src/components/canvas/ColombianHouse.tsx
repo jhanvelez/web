@@ -219,7 +219,7 @@ export function ColombianHouse({ palette = 4, floors = 2, detail = 'full', scale
       {[1, -1].map((s) => (
         <mesh key={s} position={[0, (d.ridge + d.eaveY) / 2 + 0.05, (s * d.eaveZ) / 2]} rotation={[s * d.angle, 0, 0]} castShadow receiveShadow>
           <boxGeometry args={[W + 0.9, 0.1, d.len + 0.05]} />
-          <meshStandardMaterial map={tiles} roughness={0.85} flatShading />
+          <meshStandardMaterial map={tiles} color="#b79c90" roughness={0.85} flatShading />
         </mesh>
       ))}
       <Box size={[W + 0.95, 0.12, 0.26]} position={[0, d.ridge + 0.1, 0]} color="#8f3a22" />

@@ -45,10 +45,10 @@ function buildTerrainGeometry(): THREE.BufferGeometry {
   const p = geo.attributes.position
   const n = geo.attributes.normal
   const colors = new Float32Array(p.count * 3)
-  const low = new THREE.Color('#2f6f3c')
-  const mid = new THREE.Color('#5fa243')
-  const high = new THREE.Color('#9ccb4f')
-  const rock = new THREE.Color('#8a7152')
+  const low = new THREE.Color('#15321f')
+  const mid = new THREE.Color('#2c5a2a')
+  const high = new THREE.Color('#5d8a32')
+  const rock = new THREE.Color('#2e2823')
   const soil = new THREE.Color('#9b6b3f')
   const sand = new THREE.Color('#e0b873')
   const shallow = new THREE.Color('#5fd0c4')
@@ -92,7 +92,7 @@ function buildRockBase(): THREE.BufferGeometry {
 const WAX_TRUNK = ['#d8cdb4', '#cfc4aa', '#e0d6bf']
 const WAX_LEAF = ['#3f8a36', '#4a9a3c', '#357a30']
 const FLOWERS = ['#e5483f', '#f6c445', '#f08ac0', '#ffffff', '#e87b2c']
-const COBBLES = ['#9a7b5a', '#a8896a', '#7d6650', '#b59a7a', '#8b8070', '#a39580']
+const COBBLES = ['#6d5a47', '#7a6652', '#4f4236', '#8a7660', '#5d544a', '#6f6456', '#2f2a26']
 
 function useScatter() {
   return useMemo(() => {
@@ -113,7 +113,7 @@ function useScatter() {
     // Palmas de cera
     const palmTrunks: InstanceItem[] = []
     const palmLeaves: InstanceItem[] = []
-    for (let n = 0; n < 195; n++) {
+    for (let n = 0; n < 150; n++) {
       const p = place(0, maxR, 0.6)
       if (!p || TREES.some((t) => Math.hypot(t.x - p.x, t.z - p.z) < 2.2)) continue
       const h = rng.range(3.6, 6.2)
@@ -170,7 +170,7 @@ function useScatter() {
         position: [p.x, p.y + s * 0.3, p.z],
         rotation: [rng.range(0, 3), rng.range(0, 3), rng.range(0, 3)],
         scale: [s * rng.range(0.9, 1.5), s * rng.range(0.6, 1), s * rng.range(0.9, 1.4)],
-        color: rng.pick(['#8c8a82', '#a29f94', '#77756e']),
+        color: rng.pick(['#4a4844', '#5a5750', '#34322f']),
       })
     }
     const flowers: InstanceItem[] = []
@@ -220,7 +220,7 @@ function useScatter() {
 
     // Pasto en mechones dorados (como en los prados de la referencia).
     const grass: InstanceItem[] = []
-    const GRASS = ['#b8a23a', '#9bb040', '#c9b24a', '#7ea63a', '#d1a845']
+    const GRASS = ['#8a7a2c', '#6f8a30', '#9a8a36', '#55742c', '#a08436']
     for (let n = 0; n < 60000 && grass.length < 28000; n++) {
       const a = rng.next() * Math.PI * 2
       const r = Math.sqrt(rng.next()) * maxR

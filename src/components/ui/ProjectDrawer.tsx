@@ -1,4 +1,6 @@
 import { useEffect } from 'react'
+import { useTypedLines } from '../../hooks/useTypewriter'
+import { Cursor } from './Cursor'
 import { ArrowUpRight, ChevronLeft, ChevronRight, GitFork, Star, X } from 'lucide-react'
 import { Github, Linkedin } from './BrandIcons'
 import { PROFILE } from '../../data/profile'
@@ -31,14 +33,14 @@ function RepoRow({ repo }: { repo: GitHubRepo }) {
       href={repo.html_url}
       target="_blank"
       rel="noreferrer"
-      className="group block rounded-xl border border-[#3b2417]/10 bg-white/60 p-3 transition hover:border-[#b8472f]/50 hover:bg-white"
+      className="group block rounded-xl border border-white/10 bg-white/5 p-3 transition hover:border-[#ffb454]/60 hover:bg-white/10"
     >
       <div className="flex items-center justify-between gap-2">
-        <span className="truncate font-semibold text-[#3b2417]">{repo.name}</span>
-        <ArrowUpRight size={14} className="shrink-0 text-[#3b2417]/40 transition group-hover:text-[#b8472f]" />
+        <span className="truncate font-semibold text-[#d8e2d2]">{repo.name}</span>
+        <ArrowUpRight size={14} className="shrink-0 text-[#d8e2d2]/40 transition group-hover:text-[#ffb454]" />
       </div>
-      {repo.description && <p className="mt-0.5 line-clamp-2 text-xs text-[#3b2417]/70">{repo.description}</p>}
-      <div className="mt-2 flex items-center gap-3 text-xs text-[#3b2417]/60">
+      {repo.description && <p className="mt-0.5 line-clamp-2 text-xs text-[#d8e2d2]/70">{repo.description}</p>}
+      <div className="mt-2 flex items-center gap-3 text-xs text-[#d8e2d2]/60">
         {repo.language && <span>{repo.language}</span>}
         <span className="inline-flex items-center gap-1"><Star size={12} />{repo.stargazers_count}</span>
         <span className="inline-flex items-center gap-1"><GitFork size={12} />{repo.forks_count}</span>
@@ -57,6 +59,11 @@ export function ProjectDrawer({ project, github, onClose, onPrev, onNext }: Prop
     return () => window.removeEventListener('keydown', onKey)
   }, [project, onClose])
 
+  const typed = useTypedLines(
+    project ? [project.title, project.tagline, project.description] : ['', '', ''],
+    project?.id ?? 'none',
+    { enabled: !!project, cps: 70 },
+  )
   const live = project?.repoName ? github.byName.get(project.repoName.toLowerCase()) : undefined
   const featured =
     project?.category === 'oss'
@@ -70,7 +77,7 @@ export function ProjectDrawer({ project, github, onClose, onPrev, onNext }: Prop
     <aside
       aria-hidden={!project}
       aria-label="Detalle del proyecto"
-      className={`fixed z-40 flex flex-col overflow-hidden bg-[#f6ecd8]/95 text-[#3b2417] shadow-2xl backdrop-blur-xl transition-transform duration-500 ease-out
+      className={`fixed z-40 flex flex-col overflow-hidden bg-[#0b0d10]/94 font-mono text-[#d8e2d2] shadow-2xl backdrop-blur-xl transition-transform duration-500 ease-out
         inset-x-0 bottom-0 max-h-[58vh] rounded-t-3xl
         md:inset-y-0 md:right-0 md:left-auto md:max-h-none md:w-[440px] md:rounded-l-3xl md:rounded-tr-none
         ${project ? 'translate-y-0 md:translate-x-0' : 'translate-y-full md:translate-y-0 md:translate-x-full'}`}
@@ -79,29 +86,39 @@ export function ProjectDrawer({ project, github, onClose, onPrev, onNext }: Prop
         <>
           <div className="h-2 w-full bg-[linear-gradient(90deg,#f2b632_50%,#1f5fa8_50%_75%,#c0392b_75%)]" />
           <div className="flex items-center justify-between px-6 pt-5">
-            <span className="rounded-full bg-[#2f6b3a] px-3 py-1 text-xs font-semibold uppercase tracking-wider text-white">
+            <span className="rounded-full bg-[#1f7a4d] px-3 py-1 text-xs font-semibold uppercase tracking-wider text-white">
               {CATEGORY_LABEL[project.category]}
             </span>
             <button
               type="button"
               onClick={onClose}
               aria-label="Cerrar"
-              className="grid size-9 place-items-center rounded-full bg-[#3b2417]/10 transition hover:bg-[#3b2417]/20"
+              className="grid size-9 place-items-center rounded-full bg-white/10 transition hover:bg-white/10/20"
             >
               <X size={18} />
             </button>
           </div>
 
           <div className="flex-1 overflow-y-auto px-6 pb-6 pt-3">
-            <h2 className="font-display text-3xl font-extrabold leading-tight">{project.title}</h2>
-            <p className="mt-1 italic text-[#b8472f]">{project.tagline}</p>
-            <p className="mt-4 leading-relaxed text-[#3b2417]/85">{live?.description ?? project.description}</p>
+            <p className="text-[11px] text-[#7dffb2]">$ cat proyecto.md</p>
+            <h2 className="mt-1 min-h-[1.3em] text-2xl font-extrabold leading-tight text-[#ffb454]">
+              {typed.parts[0]}
+              {typed.active === 0 && <Cursor />}
+            </h2>
+            <p className="mt-1 min-h-[1.4em] text-sm italic text-white/60">
+              {typed.parts[1]}
+              {typed.active === 1 && <Cursor />}
+            </p>
+            <p className="mt-4 min-h-[4em] text-[13px] leading-relaxed text-[#d8e2d2]/85">
+              {live?.description && typed.done ? live.description : typed.parts[2]}
+              {(typed.active === 2 || typed.done) && <Cursor />}
+            </p>
 
             {project.highlights && (
               <ul className="mt-4 space-y-1.5">
                 {project.highlights.map((h) => (
                   <li key={h} className="flex gap-2 text-sm">
-                    <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-[#f2b632]" />
+                    <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-[#ffb454]" />
                     {h}
                   </li>
                 ))}
@@ -110,10 +127,10 @@ export function ProjectDrawer({ project, github, onClose, onPrev, onNext }: Prop
 
             {project.stack.length > 0 && (
               <>
-                <h3 className="mt-6 text-xs font-semibold uppercase tracking-wider text-[#3b2417]/60">Stack</h3>
+                <h3 className="mt-6 text-xs font-semibold uppercase tracking-wider text-[#d8e2d2]/60">Stack</h3>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {project.stack.map((s) => (
-                    <span key={s} className="rounded-full border border-[#3b2417]/15 bg-white/70 px-3 py-1 text-sm">
+                    <span key={s} className="rounded-full border border-white/15 bg-white/5 px-3 py-1 text-sm">
                       {s}
                     </span>
                   ))}
@@ -122,7 +139,7 @@ export function ProjectDrawer({ project, github, onClose, onPrev, onNext }: Prop
             )}
 
             {live && (
-              <div className="mt-5 flex flex-wrap items-center gap-4 text-sm text-[#3b2417]/70">
+              <div className="mt-5 flex flex-wrap items-center gap-4 text-sm text-[#d8e2d2]/70">
                 {live.language && <span>{live.language}</span>}
                 <span className="inline-flex items-center gap-1"><Star size={14} />{live.stargazers_count}</span>
                 <span className="inline-flex items-center gap-1"><GitFork size={14} />{live.forks_count}</span>
@@ -132,10 +149,10 @@ export function ProjectDrawer({ project, github, onClose, onPrev, onNext }: Prop
 
             {project.category === 'oss' && (
               <div className="mt-6">
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-[#3b2417]/60">En GitHub</h3>
-                {github.status === 'loading' && <p className="mt-2 text-sm text-[#3b2417]/60">Cargando repositorios…</p>}
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-[#d8e2d2]/60">En GitHub</h3>
+                {github.status === 'loading' && <p className="mt-2 text-sm text-[#d8e2d2]/60">Cargando repositorios…</p>}
                 {github.status === 'error' && featured.length === 0 && (
-                  <p className="mt-2 text-sm text-[#3b2417]/60">
+                  <p className="mt-2 text-sm text-[#d8e2d2]/60">
                     No pude consultar GitHub ahora ({github.error}). Mira directamente mi perfil con el botón de abajo.
                   </p>
                 )}
@@ -153,7 +170,7 @@ export function ProjectDrawer({ project, github, onClose, onPrev, onNext }: Prop
                   href={PROFILE.linkedinUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full bg-[#1f5fa8] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#b8472f]"
+                  className="inline-flex items-center gap-2 rounded-full bg-[#1f5fa8] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#ffd36a]"
                 >
                   <Linkedin size={16} /> LinkedIn
                 </a>
@@ -161,7 +178,7 @@ export function ProjectDrawer({ project, github, onClose, onPrev, onNext }: Prop
                   href={PROFILE.githubUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full bg-[#3b2417] px-5 py-2.5 text-sm font-semibold text-[#f6ecd8] transition hover:bg-[#b8472f]"
+                  className="inline-flex items-center gap-2 rounded-full bg-[#ffb454] px-5 py-2.5 text-sm font-semibold text-[#0b0d10] transition hover:bg-[#ffd36a]"
                 >
                   <Github size={16} /> GitHub
                 </a>
@@ -172,7 +189,7 @@ export function ProjectDrawer({ project, github, onClose, onPrev, onNext }: Prop
                 href={live?.html_url ?? project.repoUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-2 rounded-full bg-[#3b2417] px-5 py-2.5 text-sm font-semibold text-[#f6ecd8] transition hover:bg-[#b8472f]"
+                className="inline-flex items-center gap-2 rounded-full bg-[#ffb454] px-5 py-2.5 text-sm font-semibold text-[#0b0d10] transition hover:bg-[#ffd36a]"
               >
                 <Github size={16} /> Repositorio
               </a>
@@ -181,7 +198,7 @@ export function ProjectDrawer({ project, github, onClose, onPrev, onNext }: Prop
                   href={project.demoUrl ?? live?.homepage ?? '#'}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full border border-[#3b2417]/30 px-5 py-2.5 text-sm font-semibold transition hover:bg-[#3b2417]/10"
+                  className="inline-flex items-center gap-2 rounded-full border border-white/30 px-5 py-2.5 text-sm font-semibold transition hover:bg-white/10/10"
                 >
                   Demo <ArrowUpRight size={16} />
                 </a>
@@ -190,12 +207,12 @@ export function ProjectDrawer({ project, github, onClose, onPrev, onNext }: Prop
             )}
           </div>
 
-          <div className="flex items-center justify-between border-t border-[#3b2417]/10 px-4 py-3 text-sm">
-            <button type="button" onClick={onPrev} className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 transition hover:bg-[#3b2417]/10">
+          <div className="flex items-center justify-between border-t border-white/10 px-4 py-3 text-sm">
+            <button type="button" onClick={onPrev} className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 transition hover:bg-white/10/10">
               <ChevronLeft size={16} /> Anterior
             </button>
-            <span className="text-xs text-[#3b2417]/50">Esc para cerrar · haz clic fuera para volver</span>
-            <button type="button" onClick={onNext} className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 transition hover:bg-[#3b2417]/10">
+            <span className="text-xs text-[#d8e2d2]/50">Esc para cerrar · haz clic fuera para volver</span>
+            <button type="button" onClick={onNext} className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 transition hover:bg-white/10/10">
               Siguiente <ChevronRight size={16} />
             </button>
           </div>

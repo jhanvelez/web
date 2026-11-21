@@ -55,13 +55,13 @@ export function Forest({ trees = TREES }: { trees?: readonly TreeInst[] }) {
           position: [t.x, t.y - 0.05, t.z],
           rotation: [0, t.rot, 0],
           scale: t.scale,
-          color: new THREE.Color().setHSL(0, 0, rng.range(0.86, 1)).getStyle(),
+          color: new THREE.Color().setHSL(0, 0, rng.range(0.6, 0.8)).getStyle(),
         }))
         return (
           <group key={key}>
             <Instanced items={items}>
               <primitive object={model.wood} attach="geometry" dispose={null} />
-              <meshStandardMaterial vertexColors flatShading roughness={0.95} />
+              <meshStandardMaterial vertexColors color="#7a706a" flatShading roughness={0.95} />
             </Instanced>
             <Instanced items={items}>
               <primitive object={model.crown} attach="geometry" dispose={null} />

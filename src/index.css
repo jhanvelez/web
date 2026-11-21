@@ -3,6 +3,7 @@
 @theme {
   --font-display: 'Fraunces', Georgia, serif;
   --font-sans: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Code', Menlo, monospace;
 }
 
 html,
@@ -143,5 +144,19 @@ canvas {
   }
   to {
     transform: translateX(-100px);
+  }
+}
+
+.term-cursor {
+  animation: term-blink 1s steps(1) infinite;
+}
+@keyframes term-blink {
+  50% {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .term-cursor {
+    animation: none;
   }
 }

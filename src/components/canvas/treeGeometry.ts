@@ -51,8 +51,8 @@ const SPECS: Record<Exclude<SpeciesId, 'pino'>, Spec> = {
   },
   yarumo: {
     trunkH: 3.3, trunkR: 0.11, taper: 0.8, levels: 2, kids: [2, 3], spread: 0.5, lenDecay: 0.55, upBias: 0.4,
-    wood: ['#9a9484', '#6f6a5d'], crown: 'leaf', palette: ['#f4f7ef', '#cfe3c4'],
-    blob: [0.36, 0.44], perTip: 5, jitter: 0.5,
+    wood: ['#9a9484', '#6f6a5d'], crown: 'leaf', palette: ['#f6f8f2', '#b9d3b0'],
+    blob: [0.46, 0.58], perTip: 6, jitter: 0.5,
   },
   navajuelo: {
     trunkH: 1.5, trunkR: 0.2, taper: 0.62, levels: 3, kids: [3, 3], spread: 0.9, lenDecay: 0.72, upBias: 0.3, side: 1,

@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { ExternalLink, Pause, Play, Volume2, VolumeX } from 'lucide-react'
 
-const VIDEO_ID = '7EBVxglfFRw'
+const VIDEO_ID = '-ai7166QvqM'
 const VIDEO_URL = `https://www.youtube.com/watch?v=${VIDEO_ID}`
-const TITLE = 'Brisas del Pamplonita'
-const ARTIST = 'Jaime y Llano González'
+const TITLE = 'Colombian Lofi · 1 Hour Mix'
+const ARTIST = 'Latin Lofi Beats'
 const PREF_KEY = 'music-pref'
+/** Volumen de fondo: se oye, pero no se siente (0–100). */
+const VOLUME = 14
 
 interface YTPlayer {
   playVideo(): void
@@ -79,8 +81,15 @@ export function MusicPlayer() {
         playerVars: { controls: 0, modestbranding: 1, rel: 0, playsinline: 1, disablekb: 1, loop: 1, playlist: VIDEO_ID },
         events: {
           onReady: (e: { target: YTPlayer }) => {
-            e.target.setVolume(45)
+            // Entrada suave: sube de 0 al volumen de fondo en ~5 s.
+            e.target.setVolume(0)
             e.target.playVideo()
+            let v = 0
+            const fade = window.setInterval(() => {
+              v = Math.min(VOLUME, v + 1)
+              e.target.setVolume(v)
+              if (v >= VOLUME) window.clearInterval(fade)
+            }, 350)
           },
           onStateChange: (e: { data: number }) => {
             if (e.data === YT.PlayerState.PLAYING) setPlaying(true)
@@ -134,13 +143,13 @@ export function MusicPlayer() {
   }
 
   return (
-    <div className="pointer-events-auto fixed bottom-4 right-4 z-30 w-[200px] overflow-hidden rounded-2xl bg-[#2a1018]/80 text-[#fff1dc] shadow-xl backdrop-blur-md max-[767px]:bottom-24">
+    <div className="pointer-events-auto fixed bottom-4 right-4 z-30 w-[200px] overflow-hidden rounded-2xl bg-[#0b0d10]/80 text-[#fff1dc] shadow-xl backdrop-blur-md max-[767px]:bottom-24">
       <div className="flex items-center gap-2 px-3 py-2">
         <button
           type="button"
           onClick={toggle}
           aria-label={playing ? 'Pausar música' : 'Reproducir música'}
-          className="grid size-8 shrink-0 place-items-center rounded-full bg-[#f2b632] text-[#2a1018] transition hover:scale-105"
+          className="grid size-8 shrink-0 place-items-center rounded-full bg-[#ffb454] text-[#0b0d10] transition hover:scale-105"
         >
           {playing ? <Pause size={15} /> : <Play size={15} className="translate-x-px" />}
         </button>
