@@ -7,4 +7,9 @@ export const live = {
   camDist: 42,
   /** Especie de árbol más cercana al arriero (para el cartel del HUD). */
   nearTree: null as string | null,
+  /** Ficha del caballo o chalán más cercano (para el HUD). */
+  nearHorse: null as string | null,
 }
+
+/** Caballos y jinetes: cada uno publica su posición y qué ficha mostrar al acercarse. */
+export const horseRegistry = new Map<string, { x: number; z: number; card: string }>()

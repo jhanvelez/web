@@ -37,5 +37,8 @@ export const PONDS: readonly Pond[] = [
 ]
 export const WATER_LEVEL = 0.2
 
+/** Potrero de los caballos de paso fino, en la llanura al noroeste del café. */
+export const PADDOCK = { x: -22, z: 20, r: 8.5 }
+
 export const PLAZA_LIST = Object.values(PLAZAS)
 export const MOUNTAIN_IDS = ['A', 'B', 'C'] as const

@@ -18,6 +18,7 @@ import { ColombianHouse } from './ColombianHouse'
 import { DrivingJeep } from './DrivingJeep'
 import { Hotspot } from './Hotspot'
 import { Mountain } from './Mountain'
+import { Paddock, Riders } from './Stable'
 import { FallingPetals, Forest } from './Trees'
 import { CoffeeSack, FincaSign, JeepWillys, Viewpoint } from './Props'
 
@@ -211,6 +212,8 @@ export default function Scene({ selectedId, nearId, intro, onSelect, onNear, onR
         <FallingPetals />
         <Lamps />
         <Fireflies />
+        <Paddock />
+        <Riders />
 
         {/* Pueblo: casas de relleno (la principal es un hotspot) */}
         {HOUSES.filter((h) => h.id !== mainHouseId).map((h) => (
@@ -258,7 +261,7 @@ export default function Scene({ selectedId, nearId, intro, onSelect, onNear, onR
           )
         })}
 
-        <ArrieroWalker apiRef={walkerRef} start={ARRIERO_START} targets={TARGETS} onNear={onNear} />
+        <ArrieroWalker apiRef={walkerRef} start={location.hash === '#paddock' ? [-14, 17] : ARRIERO_START} /* PADDOCK_TMP */ targets={TARGETS} onNear={onNear} />
         <CameraRig focused={!!selectedId} intro={intro} />
         <ReadySignal onReady={() => onReady?.()} />
 

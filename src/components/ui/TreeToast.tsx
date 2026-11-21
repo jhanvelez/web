@@ -1,26 +1,26 @@
 import { useEffect, useState } from 'react'
 import { useTypedLines } from '../../hooks/useTypewriter'
 import { live } from '../../lib/state'
-import { SPECIES, type SpeciesId } from '../../lib/trees'
+import { CARDS } from '../../lib/cards'
 import { Cursor } from './Cursor'
 
 /** Ficha de especie estilo terminal: aparece al pasar junto a un árbol y se "escribe" sola. */
 export function TreeToast() {
   const [id, setId] = useState<string | null>(null)
   // Se conserva la última especie para que el texto no desaparezca mientras la carta se desvanece.
-  const [last, setLast] = useState<SpeciesId | null>(null)
+  const [last, setLast] = useState<string | null>(null)
   useEffect(() => {
     const t = setInterval(() => {
-      const cur = live.nearTree
+      const cur = live.nearHorse ?? live.nearTree
       setId((prev) => (prev !== cur ? cur : prev))
-      if (cur) setLast(cur as SpeciesId)
+      if (cur) setLast(cur)
     }, 250)
     return () => clearInterval(t)
   }, [])
-  const sp = last ? SPECIES[last] : null
+  const sp = last ? CARDS[last] : null
   const visible = !!id
 
-  const lines = sp ? [sp.name, sp.sci ?? 'especie nativa', sp.blurb] : ['', '', '']
+  const lines = sp ? [sp.name, sp.sci ?? '', sp.blurb] : ['', '', '']
   const { parts, active, done } = useTypedLines(lines, `${last}-${visible}`, { enabled: visible, cps: 52 })
 
   return (
@@ -34,7 +34,7 @@ export function TreeToast() {
         <span className="size-2.5 rounded-full bg-[#ff5f56]" />
         <span className="size-2.5 rounded-full bg-[#ffbd2e]" />
         <span className="size-2.5 rounded-full bg-[#27c93f]" />
-        <span className="ml-2 truncate text-[11px] text-white/45">arboles/colombia.txt</span>
+        <span className="ml-2 truncate text-[11px] text-white/45">{sp?.file ?? 'arboles/colombia.txt'}</span>
       </div>
       {sp && (
         <div className="space-y-1 px-4 py-3 text-[13px] leading-snug">

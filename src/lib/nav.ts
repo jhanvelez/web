@@ -102,4 +102,5 @@ export function route(from: Vec2, to: Vec2): Vec2[] {
 
 const cafeNode = NETWORK.nodes.find((n) => n.id === 'P-K')!
 /** Destinos del paseo automático del arriero: la puerta de cada casa y el café. */
-export const WANDER_TARGETS: Vec2[] = [...HOUSES.map(houseStand), [cafeNode.x + 2.4, cafeNode.z + 2.4]]
+const gateNode = NETWORK.nodes.find((nd) => nd.id === 'G-H')!
+export const WANDER_TARGETS: Vec2[] = [...HOUSES.map(houseStand), [cafeNode.x + 2.4, cafeNode.z + 2.4], [gateNode.x, gateNode.z]]
