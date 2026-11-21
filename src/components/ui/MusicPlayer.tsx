@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { ExternalLink, Pause, Play, Volume2, VolumeX } from 'lucide-react'
 
-const VIDEO_ID = '-ai7166QvqM'
+const VIDEO_ID = 'gk-K1-r21bY'
 const VIDEO_URL = `https://www.youtube.com/watch?v=${VIDEO_ID}`
-const TITLE = 'Colombian Lofi · 1 Hour Mix'
-const ARTIST = 'Latin Lofi Beats'
+const TITLE = 'Con Verraquera'
+const ARTIST = 'Octavio Mesa y Su Conjunto'
 const PREF_KEY = 'music-pref'
 /** Volumen de fondo: se oye, pero no se siente (0–100). */
 const VOLUME = 14
@@ -59,7 +59,7 @@ const writePref = (v: string) => {
  * Música ambiental con el reproductor oficial de YouTube (el audio lo sirve YouTube; no se copia ni se aloja).
  * Los navegadores exigen un gesto del usuario: arranca con la primera tecla o clic, salvo que la hayas apagado.
  */
-export function MusicPlayer() {
+export function MusicPlayer({ hidden = false }: { hidden?: boolean }) {
   const holder = useRef<HTMLDivElement>(null)
   const player = useRef<YTPlayer | null>(null)
   const starting = useRef(false)
@@ -143,7 +143,7 @@ export function MusicPlayer() {
   }
 
   return (
-    <div className="pointer-events-auto fixed bottom-4 right-4 z-30 w-[200px] overflow-hidden rounded-2xl bg-[#243C4C]/80 text-[#F4FCFB] shadow-xl backdrop-blur-md max-[767px]:bottom-24">
+    <div className={`${hidden ? "invisible " : ""}pointer-events-auto fixed bottom-4 right-4 z-30 w-[200px] overflow-hidden rounded-2xl bg-[#243C4C]/80 text-[#F4FCFB] shadow-xl backdrop-blur-md max-[767px]:bottom-24`}>
       <div className="flex items-center gap-2 px-3 py-2">
         <button
           type="button"

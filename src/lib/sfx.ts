@@ -98,3 +98,89 @@ export function horn() {
     o.stop(t + 0.36)
   }
 }
+
+/* ───────────── Motor del Jeep ───────────── */
+
+interface Engine {
+  o1: OscillatorNode
+  o2: OscillatorNode
+  filter: BiquadFilterNode
+  gain: GainNode
+  panner: PannerNode
+}
+let engine: Engine | null = null
+
+interface V3 {
+  x: number
+  y: number
+  z: number
+}
+
+/**
+ * Motor sintetizado: dos osciladores graves por un filtro; el tono sube con la velocidad y el volumen con el acelerador.
+ * Es posicional: la fuente está en el Jeep y el oyente en la cámara, así que se oye "venir" del Jeep.
+ * Calla cuando el Jeep está quieto y sin acelerar.
+ */
+export function engineUpdate(p: { speed: number; throttle: number; max: number; at: V3; cam: V3; fwd: V3 }) {
+  const c = audio()
+  if (!c || !master) return
+  if (!engine) {
+    const o1 = c.createOscillator()
+    const o2 = c.createOscillator()
+    const filter = c.createBiquadFilter()
+    const gain = c.createGain()
+    const panner = c.createPanner()
+    o1.type = 'sawtooth'
+    o2.type = 'square'
+    filter.type = 'lowpass'
+    filter.Q.value = 3
+    gain.gain.value = 0
+    panner.panningModel = 'equalpower'
+    panner.distanceModel = 'inverse'
+    panner.refDistance = 28
+    panner.rolloffFactor = 0.7
+    o1.connect(filter)
+    o2.connect(filter)
+    filter.connect(gain).connect(panner).connect(master)
+    o1.start()
+    o2.start()
+    engine = { o1, o2, filter, gain, panner }
+  }
+  const t = c.currentTime
+  const s = Math.min(1.3, Math.abs(p.speed) / p.max)
+  const th = Math.abs(p.throttle)
+  const on = th > 0.05 || Math.abs(p.speed) > 0.4
+  const f = 40 + s * 90 + th * 16
+  engine.o1.frequency.setTargetAtTime(f, t, 0.08)
+  engine.o2.frequency.setTargetAtTime(f * 0.5, t, 0.08)
+  engine.filter.frequency.setTargetAtTime(240 + s * 950 + th * 420, t, 0.1)
+  engine.gain.gain.setTargetAtTime(on ? 0.05 + 0.1 * th + 0.07 * s : 0, t, 0.12)
+
+  engine.panner.positionX.value = p.at.x
+  engine.panner.positionY.value = p.at.y
+  engine.panner.positionZ.value = p.at.z
+  const L = c.listener
+  if ('positionX' in L) {
+    L.positionX.value = p.cam.x
+    L.positionY.value = p.cam.y
+    L.positionZ.value = p.cam.z
+    L.forwardX.value = p.fwd.x
+    L.forwardY.value = p.fwd.y
+    L.forwardZ.value = p.fwd.z
+    L.upX.value = 0
+    L.upY.value = 1
+    L.upZ.value = 0
+  }
+}
+
+/** Silencia y libera el motor (al desmontar). */
+export function engineStop() {
+  if (!engine) return
+  try {
+    engine.o1.stop()
+    engine.o2.stop()
+  } catch {
+    /* ya detenido */
+  }
+  engine = null
+}

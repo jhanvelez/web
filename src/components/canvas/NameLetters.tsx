@@ -8,45 +8,111 @@ import { live } from '../../lib/state'
 import * as sfx from '../../lib/sfx'
 import { terrainHeight } from '../../lib/terrain'
 
-/** Fuente de bloques 5×7 (solo las letras del nombre). Un "#" es un cubo. */
-const FONT: Record<string, string[]> = {
-  J: ['..###', '...#.', '...#.', '...#.', '...#.', '#..#.', '.##..'],
-  H: ['#...#', '#...#', '#...#', '#####', '#...#', '#...#', '#...#'],
-  A: ['.###.', '#...#', '#...#', '#####', '#...#', '#...#', '#...#'],
-  N: ['#...#', '##..#', '##..#', '#.#.#', '#..##', '#..##', '#...#'],
-  V: ['#...#', '#...#', '#...#', '#...#', '#...#', '.#.#.', '..#..'],
-  E: ['#####', '#....', '#....', '####.', '#....', '#....', '#####'],
-  L: ['#....', '#....', '#....', '#....', '#....', '#....', '#####'],
-  Z: ['#####', '....#', '...#.', '..#..', '.#...', '#....', '#####'],
-  É: ['#####', '#....', '#....', '####.', '#....', '#....', '#####'],
-}
-const PX = 0.3 // tamaño de cada cubo: letra de ≈1.5 × 2.1 × 0.34, a escala del Jeep
-const SPACING = 2.05
-const COLORS = ['#F4FCFB', '#5289AD', '#ACBCBF'] // paleta fría del sitio
+/* ───────────── Letras de molde, gruesas y redondeadas ───────────── */
 
-function glyphGeometry(ch: string) {
-  const rows = FONT[ch]
-  const parts: THREE.BufferGeometry[] = []
-  rows.forEach((row, r) => {
-    for (let c = 0; c < 5; c++) {
-      if (row[c] !== '#') continue
-      const b = new THREE.BoxGeometry(PX * 0.94, PX * 0.94, PX * 1.1)
-      b.translate((c - 2) * PX, (6 - r) * PX + PX / 2, 0)
-      parts.push(b)
+const T = 0.25 // grosor del trazo (la letra mide 1 de alto)
+const SIZE = 2.5 // alto final en unidades de mundo
+const DEPTH = 0.42
+const GAP = 0.2
+const SPACE = 0.5
+
+type Pt = [number, number]
+const poly = (pts: Pt[]) => {
+  const s = new THREE.Shape()
+  pts.forEach(([x, y], i) => (i ? s.lineTo(x, y) : s.moveTo(x, y)))
+  s.closePath()
+  return s
+}
+
+interface Glyph {
+  w: number
+  shapes: THREE.Shape[]
+}
+
+function makeGlyph(ch: string): Glyph | null {
+  switch (ch) {
+    case 'H': {
+      const w = 0.8
+      return { w, shapes: [poly([[0, 0], [T, 0], [T, 0.5 - T / 2], [w - T, 0.5 - T / 2], [w - T, 0], [w, 0], [w, 1], [w - T, 1], [w - T, 0.5 + T / 2], [T, 0.5 + T / 2], [T, 1], [0, 1]])] }
     }
-  })
-  if (ch === 'É') {
-    const tick = new THREE.BoxGeometry(PX * 0.94, PX * 0.94, PX * 1.1)
-    tick.rotateZ(-0.5)
-    tick.translate(0.5 * PX, 7 * PX + PX * 0.9, 0)
-    parts.push(tick)
+    case 'L': {
+      const w = 0.62
+      return { w, shapes: [poly([[0, 0], [w, 0], [w, T], [T, T], [T, 1], [0, 1]])] }
+    }
+    case 'E':
+    case 'É': {
+      const w = 0.64
+      const shapes = [poly([[0, 0], [w, 0], [w, T], [T, T], [T, 0.5 - T / 2], [w - 0.08, 0.5 - T / 2], [w - 0.08, 0.5 + T / 2], [T, 0.5 + T / 2], [T, 1 - T], [w, 1 - T], [w, 1], [0, 1]])]
+      if (ch === 'É') shapes.push(poly([[w * 0.38, 1.1], [w * 0.38 + 0.17, 1.1], [w * 0.38 + 0.33, 1.34], [w * 0.38 + 0.15, 1.34]]))
+      return { w, shapes }
+    }
+    case 'Z': {
+      const w = 0.74
+      const k = T * 1.4
+      return { w, shapes: [poly([[0, 1], [w, 1], [w, 1 - T], [k, T], [w, T], [w, 0], [0, 0], [0, T], [w - k, 1 - T], [0, 1 - T]])] }
+    }
+    case 'N': {
+      const w = 0.82
+      return { w, shapes: [poly([[0, 0], [T, 0], [T, 0.6], [w - T, 0], [w, 0], [w, 1], [w - T, 1], [w - T, 0.4], [T, 1], [0, 1]])] }
+    }
+    case 'V': {
+      const w = 0.86
+      const t1 = T * 1.1
+      return { w, shapes: [poly([[0, 1], [t1, 1], [w / 2, 0.34], [w - t1, 1], [w, 1], [w / 2 + 0.18, 0], [w / 2 - 0.18, 0]])] }
+    }
+    case 'A': {
+      const w = 0.86
+      const a = T * 0.55
+      const L = (y: number) => (w / 2 - a) * y
+      const R = (y: number) => w - (w / 2 - a) * y
+      const yb = 0.17
+      const yt = 0.37
+      const ym = (w - 2 * T) / (w - 2 * a)
+      const outer = poly([[0, 0], [T, 0], [L(yb) + T, yb], [R(yb) - T, yb], [w - T, 0], [w, 0], [w / 2 + a, 1], [w / 2 - a, 1]])
+      outer.holes.push(new THREE.Path([new THREE.Vector2(L(yt) + T, yt), new THREE.Vector2(R(yt) - T, yt), new THREE.Vector2(w / 2, ym)]))
+      return { w, shapes: [outer] }
+    }
+    case 'J': {
+      const w = 0.78
+      const xc = w - T / 2
+      const R = 0.2
+      const ry = 0.33
+      const cx = xc - R
+      const ro = R + T / 2
+      const ri = R - T / 2
+      const s = new THREE.Shape()
+      s.moveTo(xc + T / 2, 1)
+      s.lineTo(xc + T / 2, ry)
+      s.absarc(cx, ry, ro, 0, -Math.PI, true)
+      s.lineTo(cx - ro, ry + 0.13)
+      s.lineTo(cx - ri, ry + 0.13)
+      s.lineTo(cx - ri, ry)
+      s.absarc(cx, ry, ri, -Math.PI, 0, false)
+      s.lineTo(xc - T / 2, 1)
+      s.closePath()
+      return { w, shapes: [s] }
+    }
+    default:
+      return null
   }
-  return mergeGeometries(parts, false)
+}
+
+/** Letra extruida con bisel redondeado y centrada sobre su base. */
+function glyphGeometry(g: Glyph) {
+  const parts = g.shapes.map((s) =>
+    new THREE.ExtrudeGeometry(s, { depth: DEPTH, bevelEnabled: true, bevelThickness: 0.07, bevelSize: 0.06, bevelSegments: 3, curveSegments: 14 }),
+  )
+  const geo = parts.length > 1 ? mergeGeometries(parts, false) : parts[0]
+  geo.scale(SIZE, SIZE, SIZE)
+  geo.translate((-g.w * SIZE) / 2, 0, (-DEPTH * SIZE) / 2)
+  geo.computeVertexNormals()
+  return geo
 }
 
 interface Letter {
   ch: string
   index: number
+  r: number
   home: [number, number]
   x: number
   z: number
@@ -62,35 +128,41 @@ interface Letter {
   returning: number
 }
 
-const RADIUS = 0.85
-
 /**
- * "JHAN VÉLEZ" en letras de bloques en tonos fríos, de pie en el centro del mundo.
+ * Tu nombre en letras grandes y suaves, de pie en el centro del mundo.
  * Al chocarlas con el Jeep se caen, ruedan y suenan (golpe + una nota distinta por letra);
  * pasados unos segundos se levantan solas y vuelven a su lugar.
  */
 export function NameLetters() {
   const name = PROFILE.name.toUpperCase()
-  const geos = useMemo(() => {
-    const m = new Map<string, THREE.BufferGeometry>()
-    for (const ch of name) if (FONT[ch] && !m.has(ch)) m.set(ch, glyphGeometry(ch))
-    return m
-  }, [name])
 
-  const letters = useMemo<Letter[]>(() => {
+  const { letters, geos } = useMemo(() => {
+    const geos = new Map<string, THREE.BufferGeometry>()
+    const items: { ch: string; w: number }[] = []
+    for (const ch of name) {
+      const g = makeGlyph(ch)
+      if (g) {
+        if (!geos.has(ch)) geos.set(ch, glyphGeometry(g))
+        items.push({ ch, w: g.w * SIZE })
+      } else {
+        items.push({ ch: ' ', w: SPACE * SIZE })
+      }
+    }
+    const total = items.reduce((s, it) => s + it.w, 0) + GAP * SIZE * (items.length - 1)
     const dx = Math.cos(NAME_YAW)
     const dz = -Math.sin(NAME_YAW)
-    const chars = [...name]
-    const out: Letter[] = []
+    const letters: Letter[] = []
+    let cursor = -total / 2
     let note = 0
-    chars.forEach((ch, i) => {
-      if (!FONT[ch]) return
-      const o = (i - (chars.length - 1) / 2) * SPACING
-      const hx = NAME_CENTER[0] + dx * o
-      const hz = NAME_CENTER[1] + dz * o
-      out.push({ ch, index: note++, home: [hx, hz], x: hx, z: hz, vx: 0, vz: 0, y: 0, vy: 0, tilt: 0, omega: 0, dir: 0, cooldown: 0, rest: 0, returning: 0 })
+    items.forEach((it) => {
+      const mid = cursor + it.w / 2
+      cursor += it.w + GAP * SIZE
+      if (it.ch === ' ') return
+      const hx = NAME_CENTER[0] + dx * mid
+      const hz = NAME_CENTER[1] + dz * mid
+      letters.push({ ch: it.ch, index: note++, r: Math.max(0.9, it.w / 2), home: [hx, hz], x: hx, z: hz, vx: 0, vz: 0, y: 0, vy: 0, tilt: 0, omega: 0, dir: 0, cooldown: 0, rest: 0, returning: 0 })
     })
-    return out
+    return { letters, geos }
   }, [name])
 
   const refs = useRef<(THREE.Group | null)[]>([])
@@ -119,10 +191,9 @@ export function NameLetters() {
           const dx = L.x - jx
           const dz = L.z - jz
           const d = Math.hypot(dx, dz)
-          if (d < 1.15 + RADIUS) {
+          if (d < 1.15 + L.r) {
             const nx = dx / (d || 1)
             const nz = dz / (d || 1)
-            // Empuje: mezcla la dirección del Jeep con la normal del choque.
             const px = nx * 0.5 + (p.vx / (speed || 1)) * 0.5
             const pz = nz * 0.5 + (p.vz / (speed || 1)) * 0.5
             const m = Math.hypot(px, pz) || 1
@@ -154,19 +225,18 @@ export function NameLetters() {
           L.tilt += L.omega * dt
           if (L.tilt >= 1.5) {
             L.tilt = 1.5
-            L.omega = L.omega > 1.2 ? -L.omega * 0.22 : 0 // un rebote y se queda
+            L.omega = L.omega > 1.2 ? -L.omega * 0.22 : 0
           } else if (L.tilt <= 0) {
             L.tilt = 0
             L.omega = 0
           }
-          if (L.tilt < 1.5 && L.omega > 0) L.omega += 4 * dt // la gravedad la tumba
+          if (L.tilt < 1.5 && L.omega > 0) L.omega += 4 * dt
         }
         if (L.tilt > 1.4 && Math.hypot(L.vx, L.vz) < 0.2) {
           L.rest += dt
           if (L.rest > 7) L.returning = 1
         }
       } else {
-        // Se levanta y vuelve a su sitio.
         const k = 1 - Math.exp(-dt * 3)
         L.x += (L.home[0] - L.x) * k
         L.z += (L.home[1] - L.z) * k
@@ -193,7 +263,7 @@ export function NameLetters() {
       {letters.map((L, i) => (
         <group key={i} ref={(el) => { refs.current[i] = el }} position={[L.x, terrainHeight(L.x, L.z), L.z]} quaternion={qYaw}>
           <mesh geometry={geos.get(L.ch)} castShadow receiveShadow>
-            <meshStandardMaterial color={COLORS[i % 3]} emissive={COLORS[i % 3]} emissiveIntensity={0.12} roughness={0.55} flatShading />
+            <meshStandardMaterial color="#cfe3ee" emissive="#3a5f78" emissiveIntensity={0.18} roughness={0.5} />
           </mesh>
         </group>
       ))}

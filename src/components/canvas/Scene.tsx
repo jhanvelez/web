@@ -10,8 +10,7 @@ import { createRng } from '../../lib/random'
 import { live } from '../../lib/state'
 import { terrainHeight } from '../../lib/terrain'
 import type { HotspotKind, Vec3 } from '../../types/portfolio'
-import { Fireflies, Lamps } from './Ambient'
-import { type ArrieroApi, type NearTarget } from './Arriero'
+import { Fireflies, Lamps, PoiWatcher } from './Ambient'
 import { CameraRig } from './CameraRig'
 import { CoffeeCorner } from './CoffeeCorner'
 import { ColombianHouse } from './ColombianHouse'
@@ -19,8 +18,7 @@ import { DrivingJeep } from './DrivingJeep'
 import { Hotspot } from './Hotspot'
 import { Mountain } from './Mountain'
 import { NameLetters } from './NameLetters'
-import { PlayerJeep } from './PlayerJeep'
-import { Paddock, Riders } from './Stable'
+import { PlayerJeep, type JeepApi, type NearTarget } from './PlayerJeep'
 import { FallingPetals, Forest } from './Trees'
 import { CoffeeSack, FincaSign, JeepWillys, Viewpoint } from './Props'
 
@@ -176,13 +174,15 @@ interface SceneProps {
   nearId: string | null
   /** Pantalla de bienvenida activa. */
   intro: boolean
+  /** La tarjeta de bienvenida está abierta: el arriero se encuadra a la derecha. */
+  introShift: boolean
   onSelect: (hotspotId: string | null) => void
   onNear: (id: string | null) => void
   onReady?: () => void
-  walkerRef: MutableRefObject<ArrieroApi | null>
+  walkerRef: MutableRefObject<JeepApi | null>
 }
 
-export default function Scene({ selectedId, nearId, intro, onSelect, onNear, onReady, walkerRef }: SceneProps) {
+export default function Scene({ selectedId, nearId, intro, introShift, onSelect, onNear, onReady, walkerRef }: SceneProps) {
   const selected = HOTSPOTS.find((h) => h.id === selectedId) ?? null
   const mainHouseId = HOUSES.find((h) => h.main)!.id
 
@@ -214,8 +214,7 @@ export default function Scene({ selectedId, nearId, intro, onSelect, onNear, onR
         <FallingPetals />
         <Lamps />
         <Fireflies />
-        <Paddock />
-        <Riders />
+        <PoiWatcher />
 
         {/* Pueblo: casas de relleno (la principal es un hotspot) */}
         {HOUSES.filter((h) => h.id !== mainHouseId).map((h) => (
@@ -265,7 +264,7 @@ export default function Scene({ selectedId, nearId, intro, onSelect, onNear, onR
 
         <PlayerJeep apiRef={walkerRef} start={JEEP_START} targets={TARGETS} onNear={onNear} />
         <NameLetters />
-        <CameraRig focused={!!selectedId} intro={intro} />
+        <CameraRig focused={!!selectedId} intro={intro} shift={introShift} />
         <ReadySignal onReady={() => onReady?.()} />
 
         <EffectComposer multisampling={4}>

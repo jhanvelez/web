@@ -11,7 +11,7 @@ export function TreeToast() {
   const [last, setLast] = useState<string | null>(null)
   useEffect(() => {
     const t = setInterval(() => {
-      const cur = live.nearHorse ?? live.nearTree
+      const cur = live.nearPoi ?? live.nearTree
       setId((prev) => (prev !== cur ? cur : prev))
       if (cur) setLast(cur)
     }, 250)

@@ -6,8 +6,8 @@ import { carBlocked, resolveTarget, route } from '../../lib/nav'
 import { live } from '../../lib/state'
 import { terrainHeight } from '../../lib/terrain'
 import * as sfx from '../../lib/sfx'
+import { JEEP_COLOR } from '../../lib/theme'
 import type { Vec2 } from '../../types/portfolio'
-import { Arriero, type ArrieroApi, type NearTarget } from './Arriero'
 import { Particles, type ParticleBuffers } from './Particles'
 import { JeepWillys, type JeepRig } from './Props'
 
@@ -21,15 +21,28 @@ const DUST = 110
 const wrap = (a: number) => Math.atan2(Math.sin(a), Math.cos(a))
 const damp = THREE.MathUtils.damp
 
+/** Piloto automático: lleva el Jeep hasta un punto por los caminos. */
+export interface JeepApi {
+  walkTo: (x: number, z: number) => void
+}
+
+/** Lugar interactivo: el HUD avisa cuál está dentro de su radio. */
+export interface NearTarget {
+  id: string
+  x: number
+  z: number
+  radius: number
+}
+
 interface Props {
-  apiRef: MutableRefObject<ArrieroApi | null>
+  apiRef: MutableRefObject<JeepApi | null>
   start: { x: number; z: number; yaw: number }
   targets: readonly NearTarget[]
   onNear: (id: string | null) => void
 }
 
 /**
- * El arriero al volante de su Willys.
+ * Tu Willys: lo conduces tú.
  * ↑/↓ aceleran y frenan (reversa), ←/→ giran el volante y las llantas delanteras; Shift = turbo;
  * Espacio = pito. Con la palanca táctil el giro y la aceleración son analógicos.
  * Suspensión de resorte con baches, trepidación, polvo y colisiones con casas, árboles, cerca y agua.
@@ -41,9 +54,7 @@ export function PlayerJeep({ apiRef, start, targets, onNear }: Props) {
   const halo = useRef<THREE.Group>(null)
   const beacon = useRef<THREE.Mesh>(null)
   const rig = useMemo<JeepRig>(() => ({ roll: 0, bounce: [0, 0, 0, 0], steer: 0 }), [])
-  const walk = useRef(0)
-  const pace = useRef(0)
-  const steerRef = useRef(0)
+  const tmpFwd = useMemo(() => new THREE.Vector3(), [])
   const st = useRef({
     x: start.x,
     z: start.z,
@@ -71,10 +82,11 @@ export function PlayerJeep({ apiRef, start, targets, onNear }: Props) {
     }
     return () => {
       apiRef.current = null
+      sfx.engineStop()
     }
   }, [apiRef])
 
-  useFrame(({ clock }, rawDt) => {
+  useFrame(({ clock, camera }, rawDt) => {
     const dt = Math.min(rawDt, 0.05)
     const t = clock.elapsedTime
     const s = st.current
@@ -167,7 +179,6 @@ export function PlayerJeep({ apiRef, start, targets, onNear }: Props) {
 
     rig.roll += (s.speed * dt) / (0.2 * SCALE)
     rig.steer = s.steer
-    steerRef.current = s.steer
     for (let i = 0; i < 4; i++) rig.bounce[i] = s.y * 0.6 + Math.sin(t * 35 + i * 1.7) * 0.014 * sf
 
     // ── Marcas para que se note ──
@@ -177,6 +188,17 @@ export function PlayerJeep({ apiRef, start, targets, onNear }: Props) {
       beacon.current.scale.setScalar(k)
       beacon.current.position.y = (4.0 + Math.sin(t * 3.2) * 0.14) * (0.6 + k * 0.4)
     }
+
+    // ── Motor: suena desde el Jeep al acelerar ──
+    camera.getWorldDirection(tmpFwd)
+    sfx.engineUpdate({
+      speed: s.speed,
+      throttle,
+      max: MAX_FWD,
+      at: { x: s.x, y: base + 1, z: s.z },
+      cam: { x: camera.position.x, y: camera.position.y, z: camera.position.z },
+      fwd: { x: tmpFwd.x, y: tmpFwd.y, z: tmpFwd.z },
+    })
 
     // ── Pito ──
     if (input.consumeJump()) sfx.horn()
@@ -257,11 +279,7 @@ export function PlayerJeep({ apiRef, start, targets, onNear }: Props) {
     <>
       <group ref={group} position={[start.x, terrainHeight(start.x, start.z), start.z]} rotation={[0, start.yaw, 0]}>
         <group scale={SCALE}>
-          <JeepWillys rig={rig} body="#5289AD" />
-          {/* El arriero al volante */}
-          <group position={[0, 0.29, -0.08]} scale={0.82}>
-            <Arriero walk={walk} pace={pace} seated steer={steerRef} />
-          </group>
+          <JeepWillys rig={rig} body={JEEP_COLOR} />
         </group>
         {/* Aro de luz bajo el Jeep y flecha flotante */}
         <group ref={halo} position={[0, 0.07, 0]} rotation={[-Math.PI / 2, 0, 0]}>

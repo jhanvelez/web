@@ -44,8 +44,5 @@ export const CASCADE = {
   to: [35.6, 26] as readonly [number, number],
 }
 
-/** Potrero de los caballos de paso fino, en la llanura al noroeste del café. */
-export const PADDOCK = { x: -22, z: 20, r: 8.5 }
-
 export const PLAZA_LIST = Object.values(PLAZAS)
 export const MOUNTAIN_IDS = ['A', 'B', 'C'] as const

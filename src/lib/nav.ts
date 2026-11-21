@@ -1,8 +1,8 @@
 import type { Vec2 } from '../types/portfolio'
-import { HOUSES, houseStand, NETWORK, PADDOCK_GATE_ANGLE } from './layout'
+import { HOUSES, houseStand, NETWORK } from './layout'
 import { TREES } from './trees'
 import { terrainHeight } from './terrain'
-import { PADDOCK, WATER_LEVEL, WORLD_RADIUS } from './world'
+import { WATER_LEVEL, WORLD_RADIUS } from './world'
 
 const dist = (a: Vec2, b: Vec2) => Math.hypot(a[0] - b[0], a[1] - b[1])
 
@@ -85,15 +85,10 @@ export function blocked(x: number, z: number): boolean {
   return false
 }
 
-/** Bloqueos para el Jeep: además de lo anterior, troncos de árbol y la cerca del potrero (salvo la puerta). */
+/** Bloqueos para el Jeep: además de lo anterior, los troncos de los árboles. */
 export function carBlocked(x: number, z: number): boolean {
   if (blocked(x, z)) return true
   for (const t of TREES) if (Math.hypot(x - t.x, z - t.z) < 0.65) return true
-  const d = Math.hypot(x - PADDOCK.x, z - PADDOCK.z)
-  if (Math.abs(d - PADDOCK.r) < 0.7) {
-    const a = Math.atan2(z - PADDOCK.z, x - PADDOCK.x)
-    if (Math.abs(Math.atan2(Math.sin(a - PADDOCK_GATE_ANGLE), Math.cos(a - PADDOCK_GATE_ANGLE))) > 0.32) return true
-  }
   return false
 }
 
@@ -115,5 +110,4 @@ export function route(from: Vec2, to: Vec2): Vec2[] {
 
 const cafeNode = NETWORK.nodes.find((n) => n.id === 'P-K')!
 /** Destinos del paseo automático del arriero: la puerta de cada casa y el café. */
-const gateNode = NETWORK.nodes.find((nd) => nd.id === 'G-H')!
-export const WANDER_TARGETS: Vec2[] = [...HOUSES.map(houseStand), [cafeNode.x + 2.4, cafeNode.z + 2.4], [gateNode.x, gateNode.z]]
+export const WANDER_TARGETS: Vec2[] = [...HOUSES.map(houseStand), [cafeNode.x + 2.4, cafeNode.z + 2.4]]

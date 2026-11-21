@@ -19,10 +19,10 @@ const SKILLS = [
 const INTRO_LINES = [
   `Soy ${PROFILE.name}`,
   PROFILE.role,
-  'Construyo software de punta a punta. Este arriero eres tú: maneja su Jeep por las montañas, choca mi nombre si te atreves y entra a cada casa para ver mis proyectos.',
+  'Construyo software de punta a punta. Este Jeep eres tú: recorre las montañas, choca mi nombre si te atreves y entra a cada casa para ver mis proyectos.',
 ]
 
-/** Bienvenida estilo terminal: el arriero aparece grande como mascota y la carta se escribe sola. */
+/** Bienvenida estilo terminal: el Jeep aparece grande como mascota y la carta se escribe sola. */
 export function IntroCard({ visible, onStart }: Props) {
   const { parts, active, done } = useTypedLines(INTRO_LINES, 'intro', { enabled: visible, cps: 55, startDelay: 500 })
 

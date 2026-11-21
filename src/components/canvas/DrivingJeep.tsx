@@ -2,7 +2,7 @@ import { useMemo, useRef, type ReactNode } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { pathBetween } from '../../lib/nav'
-import { horseRegistry, live } from '../../lib/state'
+import { poiRegistry, live } from '../../lib/state'
 import { terrainHeight } from '../../lib/terrain'
 import type { Vec2 } from '../../types/portfolio'
 import { Particles, type ParticleBuffers } from './Particles'
@@ -87,7 +87,7 @@ export function DrivingJeep({ paused, children }: Props) {
     rig.roll += (s.speed * dt) / 0.2
     for (let i = 0; i < 4; i++) rig.bounce[i] = s.y * 0.6 + Math.sin(t * 35 + i * 1.7) * 0.014 * sf
 
-    horseRegistry.set('npc-jeep', { x: s.x, z: s.z, card: 'jeep', r: 4, prio: 2 })
+    poiRegistry.set('npc-jeep', { x: s.x, z: s.z, card: 'jeep', r: 4, prio: 2 })
     live.jeep.x = s.x
     live.jeep.z = s.z
     live.jeep.yaw = s.yaw

@@ -2,7 +2,8 @@ import { useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { LAMPS } from '../../lib/layout'
-import { live } from '../../lib/state'
+import '../../lib/pois'
+import { live, poiRegistry } from '../../lib/state'
 import { terrainHeight } from '../../lib/terrain'
 import { Particles, type ParticleBuffers } from './Particles'
 
@@ -84,4 +85,28 @@ export function Lamps() {
       ))}
     </>
   )
+}
+
+/** Al acercarse a un lugar (o al Willys), el HUD muestra su ficha: gana la prioridad más alta y luego el más cercano. */
+export function PoiWatcher() {
+  const timer = useRef(0)
+  useFrame((_, dt) => {
+    timer.current -= dt
+    if (timer.current > 0) return
+    timer.current = 0.25
+    let best: string | null = null
+    let bp = -1
+    let bd = Infinity
+    for (const h of poiRegistry.values()) {
+      const d = Math.hypot(h.x - live.player.x, h.z - live.player.z)
+      const prio = h.prio ?? 2
+      if (d < (h.r ?? 3.4) && (prio > bp || (prio === bp && d < bd))) {
+        bp = prio
+        bd = d
+        best = h.card
+      }
+    }
+    live.nearPoi = best
+  })
+  return null
 }

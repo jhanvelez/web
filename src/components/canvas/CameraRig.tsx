@@ -15,6 +15,8 @@ const INTRO_DIST = 160
 interface Props {
   /** Pantalla de bienvenida: la cámara se acerca al arriero como a una mascota. */
   intro: boolean
+  /** Desplaza el encuadre a la derecha (hay una tarjeta a la izquierda). */
+  shift?: boolean
   /** Con un proyecto abierto la cámara se acerca y desplaza el encuadre hacia el lado libre. */
   focused: boolean
 }
@@ -24,7 +26,7 @@ interface Props {
  * Rueda del mouse = zoom; Q / E = girar 45° (el movimiento del arriero es relativo a la pantalla).
  * Arranca muy lejos y se acerca en una entrada suave.
  */
-export function CameraRig({ focused, intro }: Props) {
+export function CameraRig({ focused, intro, shift = false }: Props) {
   const { camera, size, gl } = useThree()
   const az = useRef({ cur: Math.PI / 4, goal: Math.PI / 4 })
   const dist = useRef({ cur: INTRO_DIST, goal: DIST_DEFAULT })
@@ -75,8 +77,8 @@ export function CameraRig({ focused, intro }: Props) {
     const cam = camera as THREE.PerspectiveCamera
     const wide = size.width >= 768
     // Panel a la derecha → el arriero va a la izquierda; tarjeta de bienvenida a la izquierda → va a la derecha.
-    const tx = intro && wide ? -Math.min(420, size.width * 0.36) / 2 : focused && wide ? Math.min(440, size.width * 0.45) / 2 : 0
-    const ty = (focused || intro) && !wide ? size.height * 0.2 : 0
+    const tx = shift && wide ? -Math.min(420, size.width * 0.36) / 2 : focused && wide ? Math.min(440, size.width * 0.45) / 2 : 0
+    const ty = (focused || shift) && !wide ? size.height * 0.2 : 0
     const o = offset.current
     const k = 1 - Math.exp(-dt * 5)
     o.x += (tx - o.x) * k

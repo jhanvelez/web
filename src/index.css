@@ -3,6 +3,7 @@
 @theme {
   --font-display: 'Fraunces', Georgia, serif;
   --font-sans: 'Inter', system-ui, sans-serif;
+  --font-hand: 'Amatic SC', 'Segoe Print', cursive;
   --font-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Code', Menlo, monospace;
 }
 

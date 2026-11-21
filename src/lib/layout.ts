@@ -1,7 +1,7 @@
 import { HOTSPOTS } from '../data/projects'
 import type { HotspotConfig, PlazaId, Vec2 } from '../types/portfolio'
 import { createRng } from './random'
-import { CASCADE, MOUNTAIN_IDS, PADDOCK, PLAZAS } from './world'
+import { CASCADE, MOUNTAIN_IDS, PLAZAS } from './world'
 
 export interface Circle {
   x: number
@@ -114,13 +114,6 @@ function windingPath(a: Vec2, b: Vec2, amp: number, seed: number): Vec2[] {
   })
 }
 
-/** Puerta del potrero: sobre el borde, mirando al café. */
-export const PADDOCK_GATE_ANGLE = Math.atan2(K.z - PADDOCK.z, K.x - PADDOCK.x)
-export const PADDOCK_GATE: Vec2 = [
-  PADDOCK.x + Math.cos(PADDOCK_GATE_ANGLE) * (PADDOCK.r + 1.2),
-  PADDOCK.z + Math.sin(PADDOCK_GATE_ANGLE) * (PADDOCK.r + 1.2),
-]
-
 function buildNetwork() {
   const nodes: NavNode[] = []
   const edges: NavEdge[] = []
@@ -131,9 +124,6 @@ function buildNetwork() {
     const p = PLAZAS[id]
     edges.push({ a: `P-${id}`, b: 'P-K', points: windingPath([p.x, p.z], [K.x, K.z], 0, rng.range(0, 6)) })
   }
-  // Camino del café al potrero (sus lados también llevan avenida de árboles).
-  nodes.push({ id: 'G-H', x: PADDOCK_GATE[0], z: PADDOCK_GATE[1] })
-  edges.push({ a: 'P-K', b: 'G-H', points: windingPath([K.x, K.z], PADDOCK_GATE, 0, rng.range(0, 6)) })
   // Ramas: cada casa sale a la plaza de su montaña.
   for (const h of HOUSES) {
     const s = houseStand(h)
@@ -158,7 +148,6 @@ export const ARRIERO_START: Vec2 = [JEEP_START.x, JEEP_START.z]
 export const ROAD_HALF = (edgeA: string) => (edgeA.startsWith('H-') ? 1.1 : 1.9)
 
 export const KEEP_CLEAR: readonly Circle[] = [
-  { x: PADDOCK.x, z: PADDOCK.z, r: PADDOCK.r + 2.5 },
   { x: CASCADE.mound.x + 2, z: CASCADE.mound.z, r: 10 },
   { x: NAME_CENTER[0], z: NAME_CENTER[1], r: 11 },
   ...Object.values(PLAZAS).map((p) => ({ x: p.x, z: p.z, r: p.id === 'K' ? 7 : 8.4 })),
