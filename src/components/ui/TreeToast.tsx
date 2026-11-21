@@ -26,7 +26,7 @@ export function TreeToast() {
   return (
     <div
       aria-live="polite"
-      className={`pointer-events-none fixed left-4 top-24 z-20 w-[290px] overflow-hidden rounded-xl border border-[#7dffb2]/25 bg-[#0b0d10]/90 font-mono text-[#d8e2d2] shadow-[0_0_30px_rgba(125,255,178,0.08)] backdrop-blur-md transition-all duration-500 max-[767px]:top-auto max-[767px]:bottom-44 ${
+      className={`pointer-events-none fixed left-4 top-24 z-20 w-[290px] overflow-hidden rounded-xl border border-[#ACBCBF]/25 bg-[#243C4C]/90 font-mono text-[#F4FCFB] shadow-[0_0_30px_rgba(172,188,191,0.08)] backdrop-blur-md transition-all duration-500 max-[767px]:top-auto max-[767px]:bottom-44 ${
         visible ? 'translate-y-0 opacity-100' : '-translate-y-2 opacity-0'
       }`}
     >
@@ -38,8 +38,8 @@ export function TreeToast() {
       </div>
       {sp && (
         <div className="space-y-1 px-4 py-3 text-[13px] leading-snug">
-          <p className="text-[11px] text-[#7dffb2]">$ cat especie.txt</p>
-          <p className="min-h-[1.5em] text-lg font-bold text-[#ffb454]">
+          <p className="text-[11px] text-[#ACBCBF]">$ cat especie.txt</p>
+          <p className="min-h-[1.5em] text-lg font-bold text-[#9CC6E0]">
             {parts[0]}
             {active === 0 && <Cursor />}
           </p>
@@ -47,7 +47,7 @@ export function TreeToast() {
             {parts[1]}
             {active === 1 && <Cursor />}
           </p>
-          <p className="min-h-[3.6em] pt-1 text-[#d8e2d2]/85">
+          <p className="min-h-[3.6em] pt-1 text-[#F4FCFB]/85">
             {parts[2]}
             {(active === 2 || done) && <Cursor />}
           </p>

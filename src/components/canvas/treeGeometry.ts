@@ -36,42 +36,42 @@ interface Spec {
 const SPECS: Record<Exclude<SpeciesId, 'pino'>, Spec> = {
   guayacan: {
     trunkH: 2.7, trunkR: 0.15, taper: 0.62, levels: 3, kids: [2, 3], spread: 0.62, lenDecay: 0.68, upBias: 0.3, side: 2,
-    wood: ['#8a7c6e', '#5a4a3d'], crown: 'blossom', palette: ['#ffd21f', '#ffc400', '#ffe45c', '#f5b800'],
+    wood: ['#7d8486', '#4a5256'], crown: 'blossom', palette: ['#d9d2a0', '#cfc794', '#e6dfb4', '#c4bb86'],
     blob: [0.2, 0.32], perTip: 6, jitter: 0.6,
   },
   rosado: {
     trunkH: 2.5, trunkR: 0.14, taper: 0.62, levels: 3, kids: [2, 3], spread: 0.8, lenDecay: 0.72, upBias: 0.25, side: 2,
-    wood: ['#5b4a42', '#3d312b'], crown: 'blossom', palette: ['#f29bc2', '#ee7fb0', '#f7b6d2', '#e86aa3'],
+    wood: ['#4b5558', '#2e3538'], crown: 'blossom', palette: ['#c9a4b8', '#bf94ab', '#d6b8c8', '#b88aa3'],
     blob: [0.17, 0.27], perTip: 5, jitter: 0.7,
   },
   jacaranda: {
     trunkH: 2.0, trunkR: 0.19, taper: 0.62, levels: 3, kids: [2, 3], spread: 0.95, lenDecay: 0.74, upBias: 0.2, side: 2,
-    wood: ['#6b5545', '#4a3a30'], crown: 'blossom', palette: ['#9b6fd8', '#8a5cd0', '#b48ae6', '#7b4cc2'],
+    wood: ['#566066', '#3a4448'], crown: 'blossom', palette: ['#8c86c2', '#7d78b8', '#a29dd0', '#6f6aa8'],
     blob: [0.19, 0.3], perTip: 6, jitter: 0.7,
   },
   yarumo: {
     trunkH: 3.3, trunkR: 0.11, taper: 0.8, levels: 2, kids: [2, 3], spread: 0.5, lenDecay: 0.55, upBias: 0.4,
-    wood: ['#9a9484', '#6f6a5d'], crown: 'leaf', palette: ['#f6f8f2', '#b9d3b0'],
+    wood: ['#9aa4a6', '#6f7a7d'], crown: 'leaf', palette: ['#F4FCFB', '#ACBCBF'],
     blob: [0.46, 0.58], perTip: 6, jitter: 0.5,
   },
   navajuelo: {
     trunkH: 1.5, trunkR: 0.2, taper: 0.62, levels: 3, kids: [3, 3], spread: 0.9, lenDecay: 0.72, upBias: 0.3, side: 1,
-    wood: ['#6b5a4d', '#4a3d34'], crown: 'blossom', palette: ['#f06aa8', '#e8559a', '#f58cc0', '#d9468c'],
+    wood: ['#58646a', '#3c474c'], crown: 'blossom', palette: ['#b07a9c', '#a56e92', '#c492b0', '#97618a'],
     blob: [0.23, 0.35], perTip: 7, jitter: 0.6,
   },
   mermelada: {
     trunkH: 1.8, trunkR: 0.17, taper: 0.62, levels: 3, kids: [2, 3], spread: 0.85, lenDecay: 0.72, upBias: 0.3, side: 1,
-    wood: ['#6a5445', '#4a3a30'], crown: 'blossom', palette: ['#ff8a1f', '#ff6a13', '#ffa347', '#e85d0c'],
+    wood: ['#5c666a', '#3e4a4e'], crown: 'blossom', palette: ['#c8906e', '#bd8462', '#d6a688', '#b0775a'],
     blob: [0.2, 0.32], perTip: 6, jitter: 0.6,
   },
   nogal: {
     trunkH: 2.6, trunkR: 0.15, taper: 0.62, levels: 3, kids: [2, 3], spread: 0.7, lenDecay: 0.7, upBias: 0.35, side: 2,
-    wood: ['#7a6a5a', '#54463a'], crown: 'blossom', palette: ['#fffaf0', '#f2efe2', '#ffffff', '#e8efd8'],
+    wood: ['#6a7478', '#48545a'], crown: 'blossom', palette: ['#F4FCFB', '#e4eeee', '#ffffff', '#d6e4e0'],
     blob: [0.18, 0.3], perTip: 6, jitter: 0.65, green: 3,
   },
   drago: {
     trunkH: 1.7, trunkR: 0.3, taper: 0.66, levels: 2, kids: [2, 2], spread: 0.78, lenDecay: 0.7, upBias: 0.2,
-    wood: ['#7a6b5d', '#5d5047'], crown: 'rosette', palette: ['#4f7d4a', '#3d6b45', '#5f8c55'],
+    wood: ['#6e787a', '#4e585c'], crown: 'rosette', palette: ['#46705f', '#3a6355', '#58806e'],
     blob: [0.85, 1.05], perTip: 16, jitter: 0.1,
   },
 }
@@ -187,7 +187,7 @@ function grow(spec: Spec, rng: Rng) {
 }
 
 function buildPine(rng: Rng): TreeModel {
-  const wood = [limb(new THREE.Vector3(), UP.clone(), 1.6, 0.16, 0.12, new THREE.Color('#5a4636'))]
+  const wood = [limb(new THREE.Vector3(), UP.clone(), 1.6, 0.16, 0.12, new THREE.Color('#4a5558'))]
   const crown: THREE.BufferGeometry[] = []
   const tiers = 7
   for (let i = 0; i < tiers; i++) {
@@ -198,7 +198,7 @@ function buildPine(rng: Rng): TreeModel {
       const g = new THREE.ConeGeometry(R * (layer ? 0.78 : 1), h, 9, 1)
       g.rotateY(rng.range(0, 6.28))
       g.translate(rng.range(-0.05, 0.05), 1.0 + i * 0.78 + layer * 0.34 + h / 2, rng.range(-0.05, 0.05))
-      crown.push(paint(prep(g), jitterColor(layer ? '#3f7a45' : '#2f5a38', rng, 0.04)))
+      crown.push(paint(prep(g), jitterColor(layer ? '#3f6f66' : '#2c4f4a', rng, 0.04)))
     }
   }
   const g = mergeGeometries(crown, false)
@@ -233,7 +233,7 @@ function buildDeciduous(species: Exclude<SpeciesId, 'pino'>, rng: Rng): TreeMode
       for (let k = 0; k < (spec.green ?? 0); k++) {
         const g = new THREE.IcosahedronGeometry(rng.range(0.22, 0.34), 0)
         g.translate(t.p.x + rng.range(-1, 1) * spec.jitter * 0.8, t.p.y - 0.25 + rng.range(-0.4, 0.4), t.p.z + rng.range(-1, 1) * spec.jitter * 0.8)
-        crown.push(paint(prep(g), jitterColor('#4f8a45', rng)))
+        crown.push(paint(prep(g), jitterColor('#4d7f70', rng)))
       }
     } else if (spec.crown === 'leaf') {
       for (let k = 0; k < spec.perTip; k++) {

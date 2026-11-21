@@ -22,7 +22,7 @@ const FONT: Record<string, string[]> = {
 }
 const PX = 0.3 // tamaño de cada cubo: letra de ≈1.5 × 2.1 × 0.34, a escala del Jeep
 const SPACING = 2.05
-const COLORS = ['#fcd116', '#2f6bd8', '#ce1126'] // amarillo, azul y rojo de la bandera
+const COLORS = ['#F4FCFB', '#5289AD', '#ACBCBF'] // paleta fría del sitio
 
 function glyphGeometry(ch: string) {
   const rows = FONT[ch]
@@ -65,7 +65,7 @@ interface Letter {
 const RADIUS = 0.85
 
 /**
- * "JHAN VÉLEZ" en letras de bloques de colores de la bandera, de pie en el centro del mundo.
+ * "JHAN VÉLEZ" en letras de bloques en tonos fríos, de pie en el centro del mundo.
  * Al chocarlas con el Jeep se caen, ruedan y suenan (golpe + una nota distinta por letra);
  * pasados unos segundos se levantan solas y vuelven a su lugar.
  */

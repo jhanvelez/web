@@ -18,9 +18,10 @@ export interface Plaza {
 
 /** Tres montañas en triángulo y un café en la hondonada central. */
 export const PLAZAS: Record<PlazaId, Plaza> = {
-  A: { id: 'A', x: -26, z: -14, h: 4.6, flat: 11, outer: 28, cobble: 3.4 },
-  B: { id: 'B', x: 26, z: -16, h: 4, flat: 11, outer: 28, cobble: 3.4 },
-  C: { id: 'C', x: 4, z: 28, h: 3.4, flat: 10, outer: 26, cobble: 3.4 },
+  // Tres montañas idénticas en un triángulo equilátero (radio 28) alrededor del café.
+  A: { id: 'A', x: -24.25, z: -12, h: 4, flat: 11, outer: 28, cobble: 3.4 },
+  B: { id: 'B', x: 24.25, z: -12, h: 4, flat: 11, outer: 28, cobble: 3.4 },
+  C: { id: 'C', x: 0, z: 30, h: 4, flat: 11, outer: 28, cobble: 3.4 },
   K: { id: 'K', x: 0, z: 2, h: 1.3, flat: 6, outer: 14, cobble: 4.6 },
 }
 export interface Pond {

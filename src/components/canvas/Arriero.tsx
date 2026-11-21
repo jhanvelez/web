@@ -114,7 +114,7 @@ export function Arriero({ walk, pace, seated = false, steer }: { walk: MutableRe
           </mesh>
           <mesh position={[-0.19, 0.12, 0.118]} rotation={[0, 0, 0.1]}>
             <boxGeometry args={[0.072, 0.3, 0.012]} />
-            <M color="#c8372d" />
+            <M color="#5289AD" />
           </mesh>
           {/* Carriel con correa cruzada */}
           <mesh position={[0.02, 0.17, 0.092]} rotation={[0, 0, -0.75]}>
@@ -342,7 +342,7 @@ export function ArrieroWalker({ apiRef, start, targets, onNear }: WalkerProps) {
         <group ref={halo} position={[0, 0.07, 0]} rotation={[-Math.PI / 2, 0, 0]}>
           <mesh>
             <ringGeometry args={[0.75, 0.95, 40]} />
-            <meshBasicMaterial color="#ffd36a" transparent opacity={0.9} depthWrite={false} toneMapped={false} />
+            <meshBasicMaterial color="#9CC6E0" transparent opacity={0.9} depthWrite={false} toneMapped={false} />
           </mesh>
           <mesh>
             <circleGeometry args={[0.75, 40]} />
@@ -352,12 +352,12 @@ export function ArrieroWalker({ apiRef, start, targets, onNear }: WalkerProps) {
         {/* Flecha flotante sobre la cabeza */}
         <mesh ref={beacon} position={[0, 2.7, 0]} rotation={[Math.PI, 0, 0]}>
           <coneGeometry args={[0.22, 0.42, 4]} />
-          <meshBasicMaterial color="#ffd36a" toneMapped={false} />
+          <meshBasicMaterial color="#9CC6E0" toneMapped={false} />
         </mesh>
       </group>
       <mesh ref={ring} visible={false} rotation={[-Math.PI / 2, 0, 0]}>
         <ringGeometry args={[0.28, 0.4, 28]} />
-        <meshBasicMaterial color="#f2b632" transparent opacity={0.9} depthWrite={false} />
+        <meshBasicMaterial color="#5289AD" transparent opacity={0.9} depthWrite={false} />
       </mesh>
     </>
   )

@@ -46,14 +46,14 @@ function buildTerrainGeometry(): THREE.BufferGeometry {
   const p = geo.attributes.position
   const n = geo.attributes.normal
   const colors = new Float32Array(p.count * 3)
-  const low = new THREE.Color('#2a6a3a')
-  const mid = new THREE.Color('#58a043')
-  const high = new THREE.Color('#9acb4c')
-  const rock = new THREE.Color('#7a6a52')
-  const soil = new THREE.Color('#9b6b3f')
-  const sand = new THREE.Color('#e0b873')
-  const shallow = new THREE.Color('#5fd0c4')
-  const bed = new THREE.Color('#2a7a80')
+  const low = new THREE.Color('#2e5a52')
+  const mid = new THREE.Color('#4f8a78')
+  const high = new THREE.Color('#86b39c')
+  const rock = new THREE.Color('#698696')
+  const soil = new THREE.Color('#8a9a9c')
+  const sand = new THREE.Color('#ACBCBF')
+  const shallow = new THREE.Color('#7fb3cc')
+  const bed = new THREE.Color('#2f5f7a')
   const c = new THREE.Color()
   for (let f = 0; f < p.count; f += 3) {
     const cx = (p.getX(f) + p.getX(f + 1) + p.getX(f + 2)) / 3
@@ -90,10 +90,10 @@ function buildRockBase(): THREE.BufferGeometry {
   return geo
 }
 
-const WAX_TRUNK = ['#d8cdb4', '#cfc4aa', '#e0d6bf']
-const WAX_LEAF = ['#3f8a36', '#4a9a3c', '#357a30']
-const FLOWERS = ['#e5483f', '#f6c445', '#f08ac0', '#ffffff', '#e87b2c']
-const COBBLES = ['#9a7b5a', '#a8896a', '#7d6650', '#b59a7a', '#8b8070', '#a39580', '#4a4038']
+const WAX_TRUNK = ['#cfd8d8', '#c3cdcd', '#dde5e4']
+const WAX_LEAF = ['#46786a', '#4f8576', '#3b6a5e']
+const FLOWERS = ['#F4FCFB', '#ACBCBF', '#9CC6E0', '#ffffff', '#cfe0e8']
+const COBBLES = ['#8fa0a8', '#9fb0b6', '#7a8c95', '#aebcc2', '#6f8089', '#98a8af', '#4b606c']
 
 function useScatter() {
   return useMemo(() => {
@@ -152,7 +152,7 @@ function useScatter() {
           if (Math.hypot(x, z) > maxR - 1 || !isClear(x, z, 0.1)) continue
           const y = terrainHeight(x, z)
           const s = rng.range(0.85, 1.15)
-          bushes.push({ position: [x, y + 0.2 * s, z], rotation: [0, rng.range(0, 6), 0], scale: [0.34 * s, 0.28 * s, 0.34 * s], color: rng.pick(['#2c6e3a', '#347a3d', '#3a8444']) })
+          bushes.push({ position: [x, y + 0.2 * s, z], rotation: [0, rng.range(0, 6), 0], scale: [0.34 * s, 0.28 * s, 0.34 * s], color: rng.pick(['#2f5f55', '#386b5e', '#3f7566']) })
           for (let k = 0; k < 2; k++) {
             const b = rng.range(0, Math.PI * 2)
             cherries.push({ position: [x + Math.cos(b) * 0.3 * s, y + 0.22 * s + rng.range(-0.05, 0.12), z + Math.sin(b) * 0.3 * s], scale: 0.05 })
@@ -171,7 +171,7 @@ function useScatter() {
         position: [p.x, p.y + s * 0.3, p.z],
         rotation: [rng.range(0, 3), rng.range(0, 3), rng.range(0, 3)],
         scale: [s * rng.range(0.9, 1.5), s * rng.range(0.6, 1), s * rng.range(0.9, 1.4)],
-        color: rng.pick(['#8c8a82', '#a29f94', '#6a6862']),
+        color: rng.pick(['#8c9aa0', '#a3b0b5', '#6f7e86']),
       })
     }
     const flowers: InstanceItem[] = []
@@ -210,10 +210,10 @@ function useScatter() {
         }
         if (i % 2 === 0) {
           // Bordillo: piedras mayores y oscuras a ambos lados.
-          for (const side of [-1, 1]) addCobble(x + px * side * (half + 0.22), z + pz * side * (half + 0.22), 1.55, '#4a4038')
+          for (const side of [-1, 1]) addCobble(x + px * side * (half + 0.22), z + pz * side * (half + 0.22), 1.55, '#243C4C')
         }
         // Línea central de piedras claras, solo en las troncales.
-        if (!e.a.startsWith('H-') && i % 4 === 0) addCobble(x, z, 0.8, '#d8cfae')
+        if (!e.a.startsWith('H-') && i % 4 === 0) addCobble(x, z, 0.8, '#F4FCFB')
       })
     }
     for (const pl of PLAZA_LIST) {
@@ -229,7 +229,7 @@ function useScatter() {
 
     // Pasto en mechones dorados (como en los prados de la referencia).
     const grass: InstanceItem[] = []
-    const GRASS = ['#b8a23a', '#8fb040', '#c9b24a', '#6ea63a', '#d1a845']
+    const GRASS = ['#8fa87a', '#7f9f78', '#a3b78a', '#6f9470', '#9ab88c']
     for (let n = 0; n < 60000 && grass.length < 28000; n++) {
       const a = rng.next() * Math.PI * 2
       const r = Math.sqrt(rng.next()) * maxR
@@ -260,7 +260,7 @@ function Water({ x, z, r }: { x: number; z: number; r: number }) {
   return (
     <mesh position={[x, WATER_LEVEL, z]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
       <circleGeometry args={[r * 1.1, 40]} />
-      <meshStandardMaterial ref={mat} color="#2fb3c4" emissive="#1c93a6" emissiveIntensity={0.55} transparent opacity={0.82} roughness={0.15} metalness={0.2} />
+      <meshStandardMaterial ref={mat} color="#5289AD" emissive="#3a6f93" emissiveIntensity={0.55} transparent opacity={0.82} roughness={0.15} metalness={0.2} />
     </mesh>
   )
 }
@@ -276,7 +276,7 @@ export function Mountain() {
         <meshStandardMaterial vertexColors flatShading roughness={0.95} />
       </mesh>
       <mesh geometry={base} position={[0, -6, 0]} rotation={[Math.PI, 0, 0]} castShadow receiveShadow>
-        <meshStandardMaterial color="#6f5238" flatShading roughness={1} side={THREE.DoubleSide} />
+        <meshStandardMaterial color="#4a5a63" flatShading roughness={1} side={THREE.DoubleSide} />
       </mesh>
 
       <Waterfall />
@@ -307,7 +307,7 @@ export function Mountain() {
       </Instanced>
       <Instanced items={s.cherries} castShadow={false}>
         <icosahedronGeometry args={[1, 0]} />
-        <meshStandardMaterial color="#c8232c" flatShading roughness={0.6} />
+        <meshStandardMaterial color="#9bb5c4" flatShading roughness={0.6} />
       </Instanced>
 
       <Instanced items={s.rocks}>

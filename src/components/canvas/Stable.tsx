@@ -199,7 +199,7 @@ export function Paddock() {
     }
     pts.forEach((p, i) => {
       const y = terrainHeight(p.x, p.z)
-      posts.push({ position: [p.x, y + 0.6, p.z], scale: [0.14, 1.3, 0.14], color: '#5c3a21' })
+      posts.push({ position: [p.x, y + 0.6, p.z], scale: [0.14, 1.3, 0.14], color: '#34444f' })
       const q = pts[(i + 1) % N]
       if (p.gate && q.gate) return
       const qy = terrainHeight(q.x, q.z)
@@ -210,7 +210,7 @@ export function Paddock() {
           position: [(p.x + q.x) / 2, (y + qy) / 2 + h, (p.z + q.z) / 2],
           rotation: [-Math.atan2(qy - y, len), yaw, 0],
           scale: [0.07, 0.09, len],
-          color: '#8a5a33',
+          color: '#5d6d76',
         })
       }
     })
@@ -222,7 +222,7 @@ export function Paddock() {
     return [0, 1, 2].map((i) => {
       const x = PADDOCK.x + Math.cos(a + i * 0.28 - 0.28) * (PADDOCK.r - 1.2)
       const z = PADDOCK.z + Math.sin(a + i * 0.28 - 0.28) * (PADDOCK.r - 1.2)
-      return { position: [x, terrainHeight(x, z) + 0.42, z], rotation: [0, a + i, Math.PI / 2], scale: [0.45, 0.9, 0.45], color: '#c9a64a' }
+      return { position: [x, terrainHeight(x, z) + 0.42, z], rotation: [0, a + i, Math.PI / 2], scale: [0.45, 0.9, 0.45], color: '#b9b58f' }
     })
   }, [])
 
@@ -240,7 +240,7 @@ export function Paddock() {
     return { x, y: terrainHeight(x, z), z, rot: Math.atan2(-Math.cos(a), -Math.sin(a)) }
   }, [])
   const label = useMemo(
-    () => makeLabelTexture([{ text: 'DULCE SUEÑO', size: 52 }, { text: 'de Lusitania', size: 46 }, { text: 'Paso fino colombiano', size: 28 }], null, '#fbe9c2', 512, 256),
+    () => makeLabelTexture([{ text: 'DULCE SUEÑO', size: 52 }, { text: 'de Lusitania', size: 46 }, { text: 'Paso fino colombiano', size: 28 }], null, '#F4FCFB', 512, 256),
     [],
   )
 
@@ -285,11 +285,11 @@ export function Paddock() {
       <group position={[troughAt.x, troughAt.y, troughAt.z]} rotation={[0, troughAt.rot, 0]}>
         <mesh position={[0, 0.28, 0]} castShadow>
           <boxGeometry args={[1.9, 0.5, 0.65]} />
-          <meshStandardMaterial color="#6b4423" roughness={0.9} flatShading />
+          <meshStandardMaterial color="#3c4c56" roughness={0.9} flatShading />
         </mesh>
         <mesh position={[0, 0.5, 0]}>
           <boxGeometry args={[1.7, 0.02, 0.45]} />
-          <meshStandardMaterial color="#2fb3c4" emissive="#1c93a6" emissiveIntensity={0.4} roughness={0.2} />
+          <meshStandardMaterial color="#5289AD" emissive="#3a6f93" emissiveIntensity={0.4} roughness={0.2} />
         </mesh>
       </group>
 
@@ -298,12 +298,12 @@ export function Paddock() {
         {[-0.75, 0.75].map((x) => (
           <mesh key={x} position={[x, 0.7, 0]} castShadow>
             <boxGeometry args={[0.12, 1.4, 0.12]} />
-            <meshStandardMaterial color="#4a2f1b" flatShading />
+            <meshStandardMaterial color="#2b3a44" flatShading />
           </mesh>
         ))}
         <mesh position={[0, 1.1, 0]} castShadow>
           <boxGeometry args={[1.8, 0.85, 0.08]} />
-          <meshStandardMaterial color="#1b1511" roughness={0.9} flatShading />
+          <meshStandardMaterial color="#1c2a33" roughness={0.9} flatShading />
         </mesh>
         <mesh position={[0, 1.1, 0.05]}>
           <planeGeometry args={[1.7, 0.78]} />

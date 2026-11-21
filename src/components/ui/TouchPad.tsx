@@ -45,7 +45,7 @@ function Stick() {
       onPointerUp={release}
       onPointerCancel={release}
       onContextMenu={(e) => e.preventDefault()}
-      className="fixed bottom-28 left-4 z-30 touch-none select-none rounded-full border-2 border-white/15 bg-[#0b0d10]/60 backdrop-blur-md"
+      className="fixed bottom-28 left-4 z-30 touch-none select-none rounded-full border-2 border-white/15 bg-[#243C4C]/60 backdrop-blur-md"
       style={{ width: SIZE, height: SIZE }}
     >
       {/* Marcas de dirección */}
@@ -56,7 +56,7 @@ function Stick() {
         <span className="absolute right-3">▶</span>
       </div>
       <div
-        className="pointer-events-none absolute rounded-full bg-[#ffb454] shadow-[0_0_20px_rgba(255,180,84,0.5)]"
+        className="pointer-events-none absolute rounded-full bg-[#5289AD] shadow-[0_0_20px_rgba(255,180,84,0.5)]"
         style={{
           width: THUMB,
           height: THUMB,
@@ -82,12 +82,12 @@ export function TouchPad({ canInteract, onInteract }: Props) {
   if (!coarse) return null
 
   const btn =
-    'grid size-14 touch-none select-none place-items-center rounded-full bg-[#0b0d10]/70 text-[#ffd36a] backdrop-blur-md active:bg-[#ffb454] active:text-[#0b0d10]'
+    'grid size-14 touch-none select-none place-items-center rounded-full bg-[#243C4C]/70 text-[#9CC6E0] backdrop-blur-md active:bg-[#5289AD] active:text-[#F4FCFB]'
   return (
     <>
       <Stick />
       <div className="fixed bottom-28 right-4 z-30 flex flex-col items-center gap-3">
-        <button type="button" aria-label="Interactuar" onClick={onInteract} disabled={!canInteract} className="grid size-16 place-items-center rounded-full bg-[#ffb454] text-[#0b0d10] shadow-lg transition disabled:opacity-30">
+        <button type="button" aria-label="Interactuar" onClick={onInteract} disabled={!canInteract} className="grid size-16 place-items-center rounded-full bg-[#5289AD] text-[#F4FCFB] shadow-lg transition disabled:opacity-30">
           <Coffee />
         </button>
         <div className="flex gap-3">

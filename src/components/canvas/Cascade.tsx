@@ -59,7 +59,7 @@ const frag = /* glsl */ `
     float flow = sin(vUv.y * 22.0 - uTime * 5.0 + sin(vUv.x * 9.0) * 1.6);
     float flow2 = sin(vUv.y * 41.0 - uTime * 7.5 + vUv.x * 6.0);
     float foam = smoothstep(0.55, 1.0, flow) * 0.8 + smoothstep(0.7, 1.0, flow2) * 0.5;
-    vec3 col = mix(vec3(0.25, 0.72, 0.85), vec3(1.5, 1.6, 1.7), clamp(foam, 0.0, 1.0));
+    vec3 col = mix(vec3(0.32, 0.54, 0.68), vec3(1.5, 1.6, 1.7), clamp(foam, 0.0, 1.0));
     gl_FragColor = vec4(col, edge * 0.92);
     #include <colorspace_fragment>
   }`
@@ -87,7 +87,7 @@ export function Waterfall() {
         position: [x, terrainHeight(x, z) + s * 0.25, z],
         rotation: [rng.range(0, 3), rng.range(0, 3), rng.range(0, 3)],
         scale: [s * 1.2, s * 0.8, s],
-        color: rng.pick(['#8c8a82', '#a29f94', '#6a6862', '#b0aca0']),
+        color: rng.pick(['#8c9aa0', '#a3b0b5', '#6f7e86', '#b4c0c4']),
       })
     }
     return items

@@ -62,11 +62,11 @@ function Table({ position, stools }: { position: V3; stools: string[] }) {
     <group position={position}>
       <mesh position={[0, 0.72, 0]} castShadow receiveShadow>
         <cylinderGeometry args={[0.5, 0.5, 0.06, 14]} />
-        <meshStandardMaterial color="#9a6a3a" roughness={0.9} flatShading />
+        <meshStandardMaterial color="#6e7f88" roughness={0.9} flatShading />
       </mesh>
       <mesh position={[0, 0.36, 0]} castShadow>
         <cylinderGeometry args={[0.06, 0.09, 0.72, 8]} />
-        <meshStandardMaterial color="#5c3a21" roughness={0.9} flatShading />
+        <meshStandardMaterial color="#34444f" roughness={0.9} flatShading />
       </mesh>
       <Cup position={[-0.15, 0.79, 0.05]} />
       <Cup position={[0.18, 0.79, -0.1]} />
@@ -91,13 +91,13 @@ function Table({ position, stools }: { position: V3; stools: string[] }) {
 export function CoffeeCorner() {
   const tiles = getTileTexture()
   const board = useMemo(
-    () => makeLabelTexture([{ text: 'TINTO', size: 70 }, { text: 'recién colado', size: 34 }, { text: '$ 2.000', size: 40 }], '#2b3a2f', '#f6ecd8', 256, 256),
+    () => makeLabelTexture([{ text: 'TINTO', size: 70 }, { text: 'recién colado', size: 34 }, { text: '$ 2.000', size: 40 }], '#243C4C', '#F4FCFB', 256, 256),
     [],
   )
 
   // Banderines: catenaria entre los dos postes delanteros.
   const bunting = useMemo<InstanceItem[]>(() => {
-    const colors = ['#fcd116', '#003893', '#ce1126']
+    const colors = ['#F4FCFB', '#5289AD', '#ACBCBF']
     return Array.from({ length: 13 }, (_, i) => {
       const t = i / 12
       const x = -2.2 + t * 4.4
@@ -126,21 +126,21 @@ export function CoffeeCorner() {
     <group>
       {/* Estructura */}
       {posts.map((p, i) => (
-        <Box key={i} size={[0.14, 2.2, 0.14]} position={p} color="#5c3a21" />
+        <Box key={i} size={[0.14, 2.2, 0.14]} position={p} color="#34444f" />
       ))}
-      <Box size={[4.4, 0.12, 0.12]} position={[0, 2.2, 0.75]} color="#6b4423" />
-      <Box size={[4.4, 0.12, 0.12]} position={[0, 2.2, -2.2]} color="#6b4423" />
+      <Box size={[4.4, 0.12, 0.12]} position={[0, 2.2, 0.75]} color="#3c4c56" />
+      <Box size={[4.4, 0.12, 0.12]} position={[0, 2.2, -2.2]} color="#3c4c56" />
       {[1, -1].map((s) => (
         <mesh key={s} position={[0, 2.55, -0.725 + s * 0.85]} rotation={[s * angle, 0, 0]} castShadow receiveShadow>
           <boxGeometry args={[4.9, 0.09, len + 0.1]} />
           <meshStandardMaterial map={tiles} roughness={0.85} flatShading />
         </mesh>
       ))}
-      <Box size={[4.95, 0.1, 0.22]} position={[0, ridgeY - 0.02, -0.725]} color="#8f3a22" />
+      <Box size={[4.95, 0.1, 0.22]} position={[0, ridgeY - 0.02, -0.725]} color="#243C4C" />
 
       {/* Mostrador con cafetera */}
-      <Box size={[3.4, 0.9, 0.55]} position={[0, 0.45, -1.95]} color="#8a5a33" />
-      <Box size={[3.6, 0.07, 0.7]} position={[0, 0.93, -1.95]} color="#c9a26a" />
+      <Box size={[3.4, 0.9, 0.55]} position={[0, 0.45, -1.95]} color="#5d6d76" />
+      <Box size={[3.6, 0.07, 0.7]} position={[0, 0.93, -1.95]} color="#8fa0a8" />
       <mesh position={[-0.9, 1.25, -1.95]} castShadow>
         <cylinderGeometry args={[0.2, 0.26, 0.55, 12]} />
         <meshStandardMaterial color="#cfd3d6" metalness={0.6} roughness={0.35} />
@@ -154,7 +154,7 @@ export function CoffeeCorner() {
         <Cup key={x} position={[x, 1.0, -1.95]} />
       ))}
       {/* Estante con costales */}
-      <Box size={[0.9, 0.06, 0.4]} position={[1.1, 1.6, -2.1]} color="#6b4423" />
+      <Box size={[0.9, 0.06, 0.4]} position={[1.1, 1.6, -2.1]} color="#3c4c56" />
       {[0.8, 1.4].map((x) => (
         <mesh key={x} position={[x, 1.25, -2.1]} scale={[0.17, 0.17, 0.15]} castShadow>
           <icosahedronGeometry args={[1, 1]} />
@@ -163,8 +163,8 @@ export function CoffeeCorner() {
       ))}
 
       {/* Mesas y silletas al frente */}
-      <Table position={[-1.2, 0, 1.6]} stools={['#d1382c', '#2f6fb8', '#f2b632']} />
-      <Table position={[1.5, 0, 1.9]} stools={['#2f8f5b', '#d1382c', '#2f6fb8']} />
+      <Table position={[-1.2, 0, 1.6]} stools={['#5289AD', '#ACBCBF', '#243C4C']} />
+      <Table position={[1.5, 0, 1.9]} stools={['#698696', '#5289AD', '#ACBCBF']} />
 
       {/* Luces y banderines */}
       <Instanced items={bunting} castShadow={false}>
@@ -180,9 +180,9 @@ export function CoffeeCorner() {
 
       {/* Tablero de tinto */}
       <group position={[3.0, 0, 0.3]} rotation={[0, -0.5, 0]}>
-        <Box size={[0.07, 0.9, 0.07]} position={[-0.32, 0.45, 0]} color="#5c3a21" />
-        <Box size={[0.07, 0.9, 0.07]} position={[0.32, 0.45, 0]} color="#5c3a21" />
-        <Box size={[0.8, 0.8, 0.06]} position={[0, 0.85, 0]} color="#8a5a33" />
+        <Box size={[0.07, 0.9, 0.07]} position={[-0.32, 0.45, 0]} color="#34444f" />
+        <Box size={[0.07, 0.9, 0.07]} position={[0.32, 0.45, 0]} color="#34444f" />
+        <Box size={[0.8, 0.8, 0.06]} position={[0, 0.85, 0]} color="#5d6d76" />
         <mesh position={[0, 0.85, 0.035]}>
           <planeGeometry args={[0.68, 0.68]} />
           <meshBasicMaterial map={board} />

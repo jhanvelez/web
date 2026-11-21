@@ -257,7 +257,7 @@ export function PlayerJeep({ apiRef, start, targets, onNear }: Props) {
     <>
       <group ref={group} position={[start.x, terrainHeight(start.x, start.z), start.z]} rotation={[0, start.yaw, 0]}>
         <group scale={SCALE}>
-          <JeepWillys rig={rig} body="#d23a2e" />
+          <JeepWillys rig={rig} body="#5289AD" />
           {/* El arriero al volante */}
           <group position={[0, 0.29, -0.08]} scale={0.82}>
             <Arriero walk={walk} pace={pace} seated steer={steerRef} />
@@ -267,17 +267,17 @@ export function PlayerJeep({ apiRef, start, targets, onNear }: Props) {
         <group ref={halo} position={[0, 0.07, 0]} rotation={[-Math.PI / 2, 0, 0]}>
           <mesh>
             <ringGeometry args={[2.0, 2.3, 48]} />
-            <meshBasicMaterial color="#ffd36a" transparent opacity={0.85} depthWrite={false} toneMapped={false} />
+            <meshBasicMaterial color="#9CC6E0" transparent opacity={0.85} depthWrite={false} toneMapped={false} />
           </mesh>
         </group>
         <mesh ref={beacon} position={[0, 4, 0]} rotation={[Math.PI, 0, 0]}>
           <coneGeometry args={[0.3, 0.55, 4]} />
-          <meshBasicMaterial color="#ffd36a" toneMapped={false} />
+          <meshBasicMaterial color="#9CC6E0" toneMapped={false} />
         </mesh>
       </group>
       <mesh ref={ring} visible={false} rotation={[-Math.PI / 2, 0, 0]}>
         <ringGeometry args={[0.4, 0.6, 28]} />
-        <meshBasicMaterial color="#ffb454" transparent opacity={0.9} depthWrite={false} />
+        <meshBasicMaterial color="#5289AD" transparent opacity={0.9} depthWrite={false} />
       </mesh>
       <Particles count={DUST} color="#e3bf8c" update={updateDust} />
     </>

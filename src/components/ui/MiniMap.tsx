@@ -28,11 +28,11 @@ function bakeBase(): HTMLCanvasElement {
       const hx = terrainHeight(x + 0.8, z) - terrainHeight(x - 0.8, z)
       const shade = 1 - Math.max(-0.35, Math.min(0.35, hx * 0.18))
       let col: [number, number, number]
-      if (h < WATER_LEVEL - 0.05) col = [47, 179, 196]
-      else if (h < WATER_LEVEL + 0.5) col = [226, 190, 120]
+      if (h < WATER_LEVEL - 0.05) col = [82, 137, 173]
+      else if (h < WATER_LEVEL + 0.5) col = [172, 188, 191]
       else {
         const t = smoothstep(0.5, 8, h)
-        col = [60 + t * 100, 120 + t * 80, 60 + t * 20]
+        col = [70 + t * 70, 120 + t * 60, 110 + t * 40]
       }
       img.data.set([col[0] * shade, col[1] * shade, col[2] * shade, 255], o)
     }
@@ -41,7 +41,7 @@ function bakeBase(): HTMLCanvasElement {
 
   const toPx = (x: number, z: number): [number, number] => [(x / w + 0.5) * RES, (z / w + 0.5) * RES]
   g.lineCap = g.lineJoin = 'round'
-  g.strokeStyle = '#8a6a4a'
+  g.strokeStyle = '#cfdde1'
   g.lineWidth = 4
   for (const e of NETWORK.edges) {
     g.beginPath()
@@ -54,9 +54,9 @@ function bakeBase(): HTMLCanvasElement {
   }
   for (const h of HOUSES) {
     const [a, b] = toPx(h.x, h.z)
-    g.fillStyle = '#fbf0e0'
+    g.fillStyle = '#F4FCFB'
     g.fillRect(a - 4, b - 4, 8, 8)
-    g.strokeStyle = '#b8472f'
+    g.strokeStyle = '#243C4C'
     g.lineWidth = 1.5
     g.strokeRect(a - 4, b - 4, 8, 8)
   }
@@ -110,7 +110,7 @@ export function MiniMap({ open, onToggle, onSelect }: Props) {
         g.closePath()
         g.fillStyle = '#fff'
         g.fill()
-        g.strokeStyle = '#0b0d10'
+        g.strokeStyle = '#243C4C'
         g.lineWidth = 2
         g.stroke()
       }
@@ -153,17 +153,17 @@ export function MiniMap({ open, onToggle, onSelect }: Props) {
 
   return (
     <>
-      {open && <div className="fixed inset-0 z-40 bg-[#0b0d10]/70 backdrop-blur-sm" onClick={onToggle} aria-hidden />}
+      {open && <div className="fixed inset-0 z-40 bg-[#243C4C]/70 backdrop-blur-sm" onClick={onToggle} aria-hidden />}
       <div
         className={
           open
-            ? 'fixed left-1/2 top-1/2 z-50 aspect-square w-[min(88vw,82vh)] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-3xl border-4 border-[#ffd36a] bg-[#0b0d10] shadow-2xl'
-            : 'pointer-events-auto fixed bottom-4 left-4 z-30 size-[150px] overflow-hidden rounded-2xl border-2 border-[#ffd36a]/80 bg-[#0b0d10] shadow-xl max-[767px]:size-[104px]'
+            ? 'fixed left-1/2 top-1/2 z-50 aspect-square w-[min(88vw,82vh)] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-3xl border-4 border-[#7aa7c7] bg-[#243C4C] shadow-2xl'
+            : 'pointer-events-auto fixed bottom-4 left-4 z-30 size-[150px] overflow-hidden rounded-2xl border-2 border-[#7aa7c7]/80 bg-[#243C4C] shadow-xl max-[767px]:size-[104px]'
         }
       >
         <canvas ref={canvas} width={open ? 720 : 300} height={open ? 720 : 300} onClick={onClick} className="size-full cursor-pointer" aria-label="Mapa del mundo" />
         {open && (
-          <button type="button" onClick={onToggle} aria-label="Cerrar mapa" className="absolute right-3 top-3 grid size-9 place-items-center rounded-full bg-[#0b0d10]/80 text-white">
+          <button type="button" onClick={onToggle} aria-label="Cerrar mapa" className="absolute right-3 top-3 grid size-9 place-items-center rounded-full bg-[#243C4C]/80 text-white">
             <X size={18} />
           </button>
         )}
@@ -173,7 +173,7 @@ export function MiniMap({ open, onToggle, onSelect }: Props) {
           type="button"
           onClick={onToggle}
           aria-label="Abrir mapa (M)"
-          className="pointer-events-auto fixed bottom-4 left-[172px] z-30 grid size-10 place-items-center rounded-full bg-[#0b0d10]/80 text-[#ffd36a] shadow-lg backdrop-blur-md transition hover:bg-[#ffb454] hover:text-[#0b0d10] max-[767px]:left-[126px]"
+          className="pointer-events-auto fixed bottom-4 left-[172px] z-30 grid size-10 place-items-center rounded-full bg-[#243C4C]/80 text-[#9CC6E0] shadow-lg backdrop-blur-md transition hover:bg-[#5289AD] hover:text-[#F4FCFB] max-[767px]:left-[126px]"
         >
           <MapIcon size={18} />
         </button>

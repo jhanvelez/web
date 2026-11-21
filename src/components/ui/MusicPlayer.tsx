@@ -143,29 +143,29 @@ export function MusicPlayer() {
   }
 
   return (
-    <div className="pointer-events-auto fixed bottom-4 right-4 z-30 w-[200px] overflow-hidden rounded-2xl bg-[#0b0d10]/80 text-[#fff1dc] shadow-xl backdrop-blur-md max-[767px]:bottom-24">
+    <div className="pointer-events-auto fixed bottom-4 right-4 z-30 w-[200px] overflow-hidden rounded-2xl bg-[#243C4C]/80 text-[#F4FCFB] shadow-xl backdrop-blur-md max-[767px]:bottom-24">
       <div className="flex items-center gap-2 px-3 py-2">
         <button
           type="button"
           onClick={toggle}
           aria-label={playing ? 'Pausar música' : 'Reproducir música'}
-          className="grid size-8 shrink-0 place-items-center rounded-full bg-[#ffb454] text-[#0b0d10] transition hover:scale-105"
+          className="grid size-8 shrink-0 place-items-center rounded-full bg-[#5289AD] text-[#F4FCFB] transition hover:scale-105"
         >
           {playing ? <Pause size={15} /> : <Play size={15} className="translate-x-px" />}
         </button>
         <div className="min-w-0 flex-1 leading-tight">
           <p className="truncate text-xs font-semibold">{TITLE}</p>
-          <p className="truncate text-[11px] text-[#fff1dc]/65">{ARTIST}</p>
+          <p className="truncate text-[11px] text-[#F4FCFB]/65">{ARTIST}</p>
         </div>
-        <button type="button" onClick={toggleMute} aria-label={muted ? 'Activar sonido' : 'Silenciar'} className="shrink-0 text-[#fff1dc]/75 transition hover:text-white">
+        <button type="button" onClick={toggleMute} aria-label={muted ? 'Activar sonido' : 'Silenciar'} className="shrink-0 text-[#F4FCFB]/75 transition hover:text-white">
           {muted ? <VolumeX size={16} /> : <Volume2 size={16} />}
         </button>
       </div>
       {!error && !playing && (
-        <p className="px-3 pb-2 text-[11px] text-[#fff1dc]/60">Pulsa ▶ o cualquier tecla para activar la música.</p>
+        <p className="px-3 pb-2 text-[11px] text-[#F4FCFB]/60">Pulsa ▶ o cualquier tecla para activar la música.</p>
       )}
       {error && (
-        <a href={VIDEO_URL} target="_blank" rel="noreferrer" className="flex items-center gap-1 px-3 pb-2 text-[11px] text-[#ffd36a] underline">
+        <a href={VIDEO_URL} target="_blank" rel="noreferrer" className="flex items-center gap-1 px-3 pb-2 text-[11px] text-[#9CC6E0] underline">
           No pude reproducirla aquí · abrir en YouTube <ExternalLink size={11} />
         </a>
       )}

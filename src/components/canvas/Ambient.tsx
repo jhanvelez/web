@@ -39,7 +39,7 @@ export function Fireflies() {
       b.alpha[i] = (0.35 + 0.65 * Math.max(0, Math.sin(t * 1.6 * s.sp + s.ph * 3))) * Math.min(1, edge * 2.2)
     }
   }
-  return <Particles count={FLIES} color="#ffd36a" additive update={update} />
+  return <Particles count={FLIES} color="#cfe9f5" additive update={update} />
 }
 
 function Lamp({ x, z }: { x: number; z: number }) {

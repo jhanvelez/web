@@ -63,7 +63,7 @@ export default function App() {
   }, [interact])
 
   return (
-    <main className="fixed inset-0 overflow-hidden bg-[#0b0d10]">
+    <main className="fixed inset-0 overflow-hidden bg-[#243C4C]">
       <Suspense fallback={null}>
         <Scene
           selectedId={selectedId}
@@ -87,11 +87,11 @@ export default function App() {
       {ready && !selectedId && !intro && (
         <div className="pointer-events-none fixed inset-x-0 bottom-5 z-20 flex flex-col items-center gap-2 text-center max-[767px]:hidden">
           {nearHotspot && (
-            <p className="rounded-full bg-[#ffb454] px-5 py-2 font-mono text-sm font-bold text-[#0b0d10] shadow-xl">
-              Presiona <kbd className="mx-1 rounded bg-[#0b0d10] px-2 py-0.5 text-[#ffd36a]">F</kbd> para ver · {nearHotspot.label}
+            <p className="rounded-full bg-[#5289AD] px-5 py-2 font-mono text-sm font-bold text-[#F4FCFB] shadow-xl">
+              Presiona <kbd className="mx-1 rounded bg-[#243C4C] px-2 py-0.5 text-[#9CC6E0]">F</kbd> para ver · {nearHotspot.label}
             </p>
           )}
-          <p className="rounded-full bg-[#0b0d10]/70 px-4 py-1.5 text-xs text-[#fff1dc] backdrop-blur-md">
+          <p className="rounded-full bg-[#243C4C]/70 px-4 py-1.5 text-xs text-[#F4FCFB] backdrop-blur-md">
             ↑ ↓ acelerar/frenar · ← → girar · Shift turbo · Espacio pito · Q / E cámara · M mapa
           </p>
         </div>

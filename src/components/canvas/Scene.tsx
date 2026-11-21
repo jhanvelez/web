@@ -25,10 +25,10 @@ import { FallingPetals, Forest } from './Trees'
 import { CoffeeSack, FincaSign, JeepWillys, Viewpoint } from './Props'
 
 // Sol bajo, de frente y a la izquierda: contraluz de atardecer con sombras largas.
-const SUN_DIR = new THREE.Vector3(-16, 5.5, -13).normalize()
+const SUN_DIR = new THREE.Vector3(-16, 9, -13).normalize()
 
 const PROP_BY_KIND: Record<Exclude<HotspotKind, 'jeep'>, () => ReactNode> = {
-  house: () => <ColombianHouse palette={4} floors={2} detail="full" scale={1} />,
+  house: () => <ColombianHouse palette={0} floors={2} detail="full" scale={1} />,
   sack: () => <CoffeeSack />,
   sign: () => <FincaSign />,
   viewpoint: () => <Viewpoint />,
@@ -39,10 +39,10 @@ const PROP_BY_KIND: Record<Exclude<HotspotKind, 'jeep'>, () => ReactNode> = {
 function SkyDome() {
   const uniforms = useMemo(
     () => ({
-      top: { value: new THREE.Color('#2a1240') },
-      upper: { value: new THREE.Color('#9a2a45') },
-      mid: { value: new THREE.Color('#f2662c') },
-      horizon: { value: new THREE.Color('#ffb83d') },
+      top: { value: new THREE.Color('#243C4C') },
+      upper: { value: new THREE.Color('#5289AD') },
+      mid: { value: new THREE.Color('#8fb0c4') },
+      horizon: { value: new THREE.Color('#dcebee') },
       sunDir: { value: SUN_DIR.clone() },
     }),
     [],
@@ -80,12 +80,12 @@ function SkyDome() {
             float ang = atan(d.z, d.x);
             float streak = noise(vec2(ang * 2.2, h * 16.0)) * 0.6 + noise(vec2(ang * 5.0, h * 34.0)) * 0.4;
             float band = smoothstep(0.02, 0.2, h) * (1.0 - smoothstep(0.35, 0.7, h));
-            col = mix(col, col * vec3(1.35, 0.72, 0.78), smoothstep(0.45, 0.8, streak) * band * 0.75);
-            col += vec3(1.0, 0.8, 0.5) * smoothstep(0.55, 0.9, streak) * band * 0.15;
+            col = mix(col, col * vec3(1.1, 1.12, 1.2), smoothstep(0.45, 0.8, streak) * band * 0.75);
+            col += vec3(0.85, 0.95, 1.0) * smoothstep(0.55, 0.9, streak) * band * 0.15;
             float s = max(dot(d, normalize(sunDir)), 0.0);
-            col += vec3(1.0, 0.55, 0.25) * pow(s, 10.0) * 0.55;
-            col += vec3(1.0, 0.75, 0.4) * pow(s, 60.0) * 0.8;
-            col += vec3(1.0, 0.95, 0.8) * smoothstep(0.9985, 0.9996, s) * 3.0;
+            col += vec3(0.5, 0.72, 0.9) * pow(s, 10.0) * 0.5;
+            col += vec3(0.8, 0.92, 1.0) * pow(s, 60.0) * 0.7;
+            col += vec3(0.96, 0.99, 0.98) * smoothstep(0.9985, 0.9996, s) * 3.0;
             gl_FragColor = vec4(col, 1.0);
             #include <colorspace_fragment>
           }`}
@@ -121,7 +121,7 @@ function Clouds() {
           {c.puffs.map((p, k) => (
             <mesh key={k} position={p.p} scale={[p.s * 1.4, p.s * 0.6, p.s]}>
               <icosahedronGeometry args={[1, 1]} />
-              <meshStandardMaterial color="#ffb9a0" emissive="#ff6a4a" emissiveIntensity={0.4} flatShading roughness={1} />
+              <meshStandardMaterial color="#dfeaee" emissive="#8fb0c4" emissiveIntensity={0.15} flatShading roughness={1} />
             </mesh>
           ))}
         </group>
@@ -133,12 +133,12 @@ function Clouds() {
 function Lights() {
   return (
     <>
-      <hemisphereLight args={['#ffb48a', '#5a3a5a', 1.2]} />
-      <ambientLight intensity={0.5} color="#ffc9a0" />
+      <hemisphereLight args={['#cfe3ec', '#243C4C', 1.15]} />
+      <ambientLight intensity={0.5} color="#dbe9ef" />
       <directionalLight
         position={SUN_DIR.clone().multiplyScalar(90).toArray()}
-        intensity={3.8}
-        color="#ff9050"
+        intensity={3.4}
+        color="#e8f4f8"
         castShadow
         shadow-mapSize={[4096, 4096]}
         shadow-camera-left={-66}
@@ -151,10 +151,10 @@ function Lights() {
         shadow-normalBias={0.04}
       />
       {/* Relleno magenta desde el lado de la cámara para que el contraluz no apague los frentes */}
-      <directionalLight position={[22, 12, 26]} intensity={1.0} color="#ff8fa8" />
+      <directionalLight position={[22, 12, 26]} intensity={0.9} color="#5289AD" />
       <Environment resolution={64} environmentIntensity={0.4}>
-        <Lightformer form="rect" intensity={2.5} color="#ff8a4a" position={[-8, 4, -6]} scale={[10, 4, 1]} />
-        <Lightformer form="rect" intensity={1.2} color="#b04a9a" position={[8, 6, 6]} scale={[10, 4, 1]} />
+        <Lightformer form="rect" intensity={2.5} color="#cfe6ee" position={[-8, 4, -6]} scale={[10, 4, 1]} />
+        <Lightformer form="rect" intensity={1.2} color="#5289AD" position={[8, 6, 6]} scale={[10, 4, 1]} />
       </Environment>
     </>
   )
@@ -204,7 +204,7 @@ export default function Scene({ selectedId, nearId, intro, onSelect, onNear, onR
       gl={{ antialias: true, powerPreference: 'high-performance' }}
       onPointerMissed={() => onSelect(null)}
     >
-      <fog attach="fog" args={['#d9683f', 100, 340]} />
+      <fog attach="fog" args={['#a9bcc4', 150, 480]} />
       <Suspense fallback={null}>
         <SkyDome />
         <Lights />
@@ -269,8 +269,8 @@ export default function Scene({ selectedId, nearId, intro, onSelect, onNear, onR
         <ReadySignal onReady={() => onReady?.()} />
 
         <EffectComposer multisampling={4}>
-          <Bloom intensity={0.6} luminanceThreshold={0.85} luminanceSmoothing={0.25} mipmapBlur />
-          <Vignette eskil={false} offset={0.2} darkness={0.5} />
+          <Bloom intensity={0.35} luminanceThreshold={0.85} luminanceSmoothing={0.25} mipmapBlur />
+          <Vignette eskil={false} offset={0.25} darkness={0.3} />
           <ToneMapping mode={ToneMappingMode.ACES_FILMIC} />
         </EffectComposer>
       </Suspense>

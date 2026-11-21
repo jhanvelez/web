@@ -15,7 +15,7 @@ body,
 
 body {
   font-family: var(--font-sans);
-  background: #3a1218;
+  background: #243C4C;
   overscroll-behavior: none;
 }
 
@@ -45,17 +45,17 @@ canvas {
   width: 34px;
   height: 34px;
   border-radius: 9999px;
-  background: #f2b632;
-  color: #2a1a10;
-  border: 2px solid #fff8e6;
-  box-shadow: 0 4px 14px rgba(42, 26, 16, 0.45);
+  background: #5289AD;
+  color: #F4FCFB;
+  border: 2px solid #F4FCFB;
+  box-shadow: 0 4px 14px rgba(20, 36, 46, 0.45);
   transition: transform 0.2s ease, background 0.2s ease;
 }
 .hotspot-pulse {
   position: absolute;
   inset: 0;
   border-radius: 9999px;
-  background: rgba(242, 182, 50, 0.55);
+  background: rgba(82, 137, 173, 0.55);
   animation: hotspot-pulse 2s ease-out infinite;
 }
 .hotspot-label {
@@ -66,8 +66,8 @@ canvas {
   white-space: nowrap;
   padding: 5px 12px;
   border-radius: 9999px;
-  background: rgba(42, 26, 16, 0.9);
-  color: #f6ecd8;
+  background: rgba(36, 60, 76, 0.94);
+  color: #F4FCFB;
   font: 600 13px/1.2 var(--font-sans);
   opacity: 0;
   pointer-events: none;
@@ -81,20 +81,20 @@ canvas {
 }
 .hotspot-btn.is-near .hotspot-core {
   transform: scale(1.25);
-  background: #ffd36a;
-  box-shadow: 0 0 0 4px rgba(255, 211, 106, 0.35), 0 4px 18px rgba(255, 150, 60, 0.7);
+  background: #7aa7c7;
+  box-shadow: 0 0 0 4px rgba(156, 198, 224, 0.35), 0 4px 18px rgba(82, 137, 173, 0.7);
 }
 .hotspot-key {
   margin-left: 8px;
   padding: 1px 7px;
   border-radius: 6px;
-  background: #f2b632;
-  color: #2a1a10;
+  background: #5289AD;
+  color: #F4FCFB;
   font: 700 12px/1.4 var(--font-sans);
 }
 .hotspot-btn.is-hovered .hotspot-core {
   transform: scale(1.18);
-  background: #ffd36a;
+  background: #7aa7c7;
 }
 .hotspot-btn:focus-visible .hotspot-core {
   outline: 3px solid #1f5fa8;

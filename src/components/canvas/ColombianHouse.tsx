@@ -20,15 +20,13 @@ interface Palette {
 
 /** Paletas inspiradas en los pueblos cafeteros: verde, azul/rojo, rojo/verde, amarillo y el clásico azul. */
 export const PALETTES: readonly Palette[] = [
-  { wall: '#fbf6ea', socle: '#1f7a64', door: '#2a8f74', frame: '#1f7a64', balcony: '#2a8f74', shutter: '#1f7a64' },
-  { wall: '#fdfaf0', socle: '#2f7fd0', door: '#e8553c', frame: '#2f7fd0', balcony: '#e8742f', shutter: '#2f7fd0' },
-  { wall: '#f7edd3', socle: '#b53a2c', door: '#c0392b', frame: '#2f8f5b', balcony: '#2f8f5b', shutter: '#2f8f5b' },
-  { wall: '#fbf0c8', socle: '#d9a21b', door: '#2f6fb8', frame: '#d9a21b', balcony: '#c0392b', shutter: '#2f6fb8' },
-  { wall: '#fbf6ea', socle: '#1f5fa8', door: '#c0392b', frame: '#2f6fb8', balcony: '#8a5a33', shutter: '#2f8f5b' },
+  { wall: '#F4FCFB', socle: '#5289AD', door: '#243C4C', frame: '#5289AD', balcony: '#243C4C', shutter: '#698696' },
+  { wall: '#F4FCFB', socle: '#243C4C', door: '#5289AD', frame: '#243C4C', balcony: '#698696', shutter: '#5289AD' },
+  { wall: '#F4FCFB', socle: '#698696', door: '#243C4C', frame: '#ACBCBF', balcony: '#5289AD', shutter: '#243C4C' },
 ]
 
-const WOOD = '#8a5a33'
-const WOOD_DARK = '#6b4423'
+const WOOD = '#5d6d76'
+const WOOD_DARK = '#34444f'
 const GLASS = '#7fa6b8'
 
 function dims(floors: 1 | 2) {
@@ -55,17 +53,17 @@ export function getTileTexture() {
   const c = document.createElement('canvas')
   c.width = c.height = 128
   const g = c.getContext('2d')!
-  g.fillStyle = '#b4532f'
+  g.fillStyle = '#698696'
   g.fillRect(0, 0, 128, 128)
   for (let row = 0; row < 8; row++) {
     for (let col = 0; col < 8; col++) {
-      g.fillStyle = `hsl(${14 + ((row * 7 + col * 13) % 9)}, 58%, ${40 + ((row * 5 + col * 11) % 10)}%)`
+      g.fillStyle = `hsl(${200 + ((row * 7 + col * 13) % 9)}, 14%, ${36 + ((row * 5 + col * 11) % 10)}%)`
       g.beginPath()
       g.roundRect(col * 16 + (row % 2) * 8 + 1, row * 16 + 1, 14, 14, [2, 2, 7, 7])
       g.fill()
     }
   }
-  g.strokeStyle = 'rgba(60,20,10,0.35)'
+  g.strokeStyle = 'rgba(20,36,46,0.4)'
   g.lineWidth = 1.5
   for (let row = 1; row <= 8; row++) {
     g.beginPath()
@@ -194,7 +192,7 @@ export function ColombianHouse({ palette = 4, floors = 2, detail = 'full', scale
 
   const garden = useMemo(() => {
     if (!full) return []
-    const colors = ['#e5483f', '#f6c445', '#f08ac0', '#e87b2c', '#ffffff']
+    const colors = ['#9CC6E0', '#ACBCBF', '#F4FCFB', '#cfe0e8', '#ffffff']
     const out: { p: V3; c: string }[] = []
     for (let i = 0; i < 9; i++) {
       out.push({ p: [-2.6 - (i % 3) * 0.2, 0.12 + (i % 2) * 0.05, -0.9 + i * 0.28], c: colors[i % 5] })
@@ -206,7 +204,7 @@ export function ColombianHouse({ palette = 4, floors = 2, detail = 'full', scale
   return (
     <group scale={scale}>
       {/* Cimiento y paredes */}
-      <Box size={[W + 0.2, 0.12, D + 0.2]} position={[0, 0.02, 0]} color="#8d8577" />
+      <Box size={[W + 0.2, 0.12, D + 0.2]} position={[0, 0.02, 0]} color="#8ea0a8" />
       <Box size={[W, FLOOR1, D]} position={[0, FLOOR1 / 2, 0]} color={pal.wall} />
       <Box size={[W + 0.05, 0.45, D + 0.05]} position={[0, 0.3, 0]} color={pal.socle} />
       {two && <Box size={[W, FLOOR2, D]} position={[0, FLOOR1 + FLOOR2 / 2, 0]} color={pal.wall} />}
@@ -219,14 +217,14 @@ export function ColombianHouse({ palette = 4, floors = 2, detail = 'full', scale
       {[1, -1].map((s) => (
         <mesh key={s} position={[0, (d.ridge + d.eaveY) / 2 + 0.05, (s * d.eaveZ) / 2]} rotation={[s * d.angle, 0, 0]} castShadow receiveShadow>
           <boxGeometry args={[W + 0.9, 0.1, d.len + 0.05]} />
-          <meshStandardMaterial map={tiles} color="#b79c90" roughness={0.85} flatShading />
+          <meshStandardMaterial map={tiles} color="#ffffff" roughness={0.85} flatShading />
         </mesh>
       ))}
-      <Box size={[W + 0.95, 0.12, 0.26]} position={[0, d.ridge + 0.1, 0]} color="#8f3a22" />
+      <Box size={[W + 0.95, 0.12, 0.26]} position={[0, d.ridge + 0.1, 0]} color="#243C4C" />
 
       {/* Chimenea */}
-      <Box size={[0.4, 1.0, 0.4]} position={[1.4, d.ridge - 0.1, -0.5]} color="#e9dfcb" />
-      <Box size={[0.5, 0.08, 0.5]} position={[1.4, d.ridge + 0.42, -0.5]} color="#8f3a22" />
+      <Box size={[0.4, 1.0, 0.4]} position={[1.4, d.ridge - 0.1, -0.5]} color="#ACBCBF" />
+      <Box size={[0.5, 0.08, 0.5]} position={[1.4, d.ridge + 0.42, -0.5]} color="#243C4C" />
       {full && <Smoke position={[1.4, d.ridge + 0.5, -0.5]} />}
 
       {/* Puerta principal y ventanas (planta baja) */}
@@ -279,9 +277,9 @@ export function ColombianHouse({ palette = 4, floors = 2, detail = 'full', scale
         two &&
         [-1.8, -1.0, -0.2, 0.6, 1.4, 2.0].map((x, i) => (
           <group key={x} position={[x, 2.3, D / 2 + 1.03]}>
-            <Box size={[0.26, 0.16, 0.16]} position={[0, 0, 0]} color="#b35a38" />
-            <Flower position={[-0.05, 0.16, 0]} color={['#e5483f', '#f08ac0', '#f6c445'][i % 3]} />
-            <Flower position={[0.07, 0.2, 0.02]} color={['#f08ac0', '#e5483f', '#ffffff'][i % 3]} />
+            <Box size={[0.26, 0.16, 0.16]} position={[0, 0, 0]} color="#698696" />
+            <Flower position={[-0.05, 0.16, 0]} color={['#9CC6E0', '#F4FCFB', '#ACBCBF'][i % 3]} />
+            <Flower position={[0.07, 0.2, 0.02]} color={['#F4FCFB', '#9CC6E0', '#ffffff'][i % 3]} />
           </group>
         ))}
 
@@ -295,19 +293,19 @@ export function ColombianHouse({ palette = 4, floors = 2, detail = 'full', scale
             <Flower key={i} position={f.p} color={f.c} />
           ))}
           {/* Escalones, macetas grandes y farol junto a la puerta */}
-          <Box size={[1.5, 0.1, 0.55]} position={[0, 0.06, D / 2 + 0.3]} color="#9a8f80" />
-          <Box size={[1.2, 0.1, 0.38]} position={[0, 0.16, D / 2 + 0.22]} color="#aa9e8d" />
+          <Box size={[1.5, 0.1, 0.55]} position={[0, 0.06, D / 2 + 0.3]} color="#9fb0b6" />
+          <Box size={[1.2, 0.1, 0.38]} position={[0, 0.16, D / 2 + 0.22]} color="#b0c0c5" />
           {[-1.0, 1.0].map((x) => (
             <group key={x} position={[x, 0, D / 2 + 0.5]}>
               <mesh position={[0, 0.2, 0]} castShadow>
                 <cylinderGeometry args={[0.2, 0.15, 0.4, 8]} />
-                <meshStandardMaterial color="#b35a38" flatShading />
+                <meshStandardMaterial color="#698696" flatShading />
               </mesh>
               <mesh position={[0, 0.6, 0]} castShadow>
                 <icosahedronGeometry args={[0.28, 0]} />
-                <meshStandardMaterial color="#3f8a45" flatShading />
+                <meshStandardMaterial color="#4f8a7a" flatShading />
               </mesh>
-              <Flower position={[0.1, 0.82, 0.05]} color={x < 0 ? '#e5483f' : '#f6c445'} />
+              <Flower position={[0.1, 0.82, 0.05]} color={x < 0 ? '#9CC6E0' : '#ACBCBF'} />
             </group>
           ))}
           <mesh position={[0.72, 1.2, D / 2 + 0.12]}>
@@ -315,7 +313,7 @@ export function ColombianHouse({ palette = 4, floors = 2, detail = 'full', scale
             <meshStandardMaterial color="#ffe2a0" emissive="#ffa83a" emissiveIntensity={1.6} toneMapped={false} />
           </mesh>
           {[-1, 1].map((s) => (
-            <Box key={s} size={[0.9, 0.12, 2.8]} position={[s * 2.9, 0.06, 0.2]} color="#6b4a2e" />
+            <Box key={s} size={[0.9, 0.12, 2.8]} position={[s * 2.9, 0.06, 0.2]} color="#4a5a63" />
           ))}
         </>
       )}

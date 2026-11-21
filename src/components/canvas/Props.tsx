@@ -28,7 +28,7 @@ function Cyl({ r, h, position, color, rotation, seg = 10 }: { r: number; h: numb
 
 /* ───────────── Jeep Willys ───────────── */
 
-const JEEP_BASE = { body: '#1f9a8a', trim: '#f2e8cf', dark: '#2a2a2a', chrome: '#cfd3d6' }
+const JEEP_BASE = { body: '#698696', trim: '#F4FCFB', dark: '#2a2a2a', chrome: '#cfd3d6' }
 
 export interface JeepRig {
   /** Ángulo de giro de las ruedas (rad). */
@@ -86,7 +86,7 @@ export function JeepWillys({ rig = STATIC_RIG, body = JEEP_BASE.body }: { rig?: 
       <Box size={[0.78, 0.34, 0.9]} position={[0, 0.52, -0.3]} color={JEEP.body} />
       <Box size={[0.8, 0.05, 0.92]} position={[0, 0.36, -0.3]} color={JEEP.trim} />
       {/* Franja decorativa */}
-      <Box size={[0.805, 0.05, 1.5]} position={[0, 0.52, 0.05]} color="#e8453c" />
+      <Box size={[0.805, 0.05, 1.5]} position={[0, 0.52, 0.05]} color="#243C4C" />
       {/* Guardabarros */}
       {[-0.4, 0.4].map((x) => (
         <Box key={x} size={[0.16, 0.05, 0.5]} position={[x, 0.46, 0.62]} color={JEEP.body} />
@@ -111,8 +111,8 @@ export function JeepWillys({ rig = STATIC_RIG, body = JEEP_BASE.body }: { rig?: 
         <Box key={x} size={[0.04, 0.3, 0.04]} position={[x, 0.84, 0.17]} color={JEEP.dark} />
       ))}
       {/* Asientos */}
-      <Box size={[0.6, 0.1, 0.28]} position={[0, 0.74, -0.1]} color="#8a3b2a" />
-      <Box size={[0.6, 0.28, 0.07]} position={[0, 0.88, -0.28]} color="#8a3b2a" />
+      <Box size={[0.6, 0.1, 0.28]} position={[0, 0.74, -0.1]} color="#34444f" />
+      <Box size={[0.6, 0.28, 0.07]} position={[0, 0.88, -0.28]} color="#34444f" />
       {/* Barras antivuelco y parrilla de techo */}
       {[-0.36, 0.36].map((x) => (
         <Box key={x} size={[0.04, 0.5, 0.04]} position={[x, 1.0, -0.62]} color={JEEP.dark} />
@@ -161,27 +161,27 @@ export function FincaSign() {
           { text: 'Café · Código · Cultura', size: 30 },
         ],
         null,
-        '#fbe9c2',
+        '#F4FCFB',
         512,
         256,
       ),
     [],
   )
-  const gh = useMemo(() => makeLabelTexture([{ text: 'GitHub →', size: 62 }], null, '#2a1608', 256, 96), [])
+  const gh = useMemo(() => makeLabelTexture([{ text: 'GitHub →', size: 62 }], null, '#243C4C', 256, 96), [])
   return (
     <group>
       {[-0.82, 0.82].map((x) => (
-        <Box key={x} size={[0.12, 1.5, 0.12]} position={[x, 0.65, 0]} color="#5c3a21" />
+        <Box key={x} size={[0.12, 1.5, 0.12]} position={[x, 0.65, 0]} color="#34444f" />
       ))}
-      <Box size={[1.9, 0.95, 0.09]} position={[0, 1.25, 0]} color="#8a5a33" />
-      <Box size={[2.0, 0.07, 0.12]} position={[0, 1.76, 0]} color="#5c3a21" />
-      <Box size={[2.0, 0.07, 0.12]} position={[0, 0.74, 0]} color="#5c3a21" />
+      <Box size={[1.9, 0.95, 0.09]} position={[0, 1.25, 0]} color="#5d6d76" />
+      <Box size={[2.0, 0.07, 0.12]} position={[0, 1.76, 0]} color="#34444f" />
+      <Box size={[2.0, 0.07, 0.12]} position={[0, 0.74, 0]} color="#34444f" />
       <mesh position={[0, 1.25, 0.05]}>
         <planeGeometry args={[1.8, 0.9]} />
         <meshStandardMaterial map={tex} transparent roughness={0.8} />
       </mesh>
       {/* Tablita colgante */}
-      <Box size={[0.8, 0.3, 0.06]} position={[0, 0.5, 0.02]} color="#a06b3c" />
+      <Box size={[0.8, 0.3, 0.06]} position={[0, 0.5, 0.02]} color="#6e7f88" />
       <mesh position={[0, 0.5, 0.055]}>
         <planeGeometry args={[0.7, 0.24]} />
         <meshBasicMaterial map={gh} transparent />
@@ -230,7 +230,7 @@ export function CoffeeSack() {
       </mesh>
       <mesh position={[0, 0.56, 0]}>
         <torusGeometry args={[0.1, 0.018, 5, 10]} />
-        <meshStandardMaterial color="#6b4a2e" roughness={1} />
+        <meshStandardMaterial color="#4a5a63" roughness={1} />
       </mesh>
       {showLabel && (
         <mesh position={[0, 0.33, 0.235]}>
@@ -243,7 +243,7 @@ export function CoffeeSack() {
 
   return (
     <group>
-      <Box size={[1.5, 0.07, 1.0]} position={[0, 0.035, 0]} color="#8a5a33" />
+      <Box size={[1.5, 0.07, 1.0]} position={[0, 0.035, 0]} color="#5d6d76" />
       <Sack position={[-0.35, 0.07, 0.1]} showLabel />
       <Sack position={[0.12, 0.07, -0.15]} rot={0.6} color="#c4a265" />
       <Sack position={[-0.1, 0.52, -0.05]} rot={-0.4} color="#d3b57e" />
@@ -255,7 +255,7 @@ export function CoffeeSack() {
       {/* Canasto */}
       <mesh position={[0.55, 0.12, 0.2]}>
         <cylinderGeometry args={[0.22, 0.17, 0.22, 10, 1, true]} />
-        <meshStandardMaterial color="#b88a4a" side={THREE.DoubleSide} flatShading roughness={1} />
+        <meshStandardMaterial color="#7e909a" side={THREE.DoubleSide} flatShading roughness={1} />
       </mesh>
     </group>
   )
@@ -296,30 +296,30 @@ export function Viewpoint() {
     <group>
       {/* Pilotes largos que bajan hasta la ladera */}
       {[-0.9, 0.9].flatMap((x) => [-0.9, 0.9].map((z) => (
-        <Box key={`${x}${z}`} size={[0.14, 2.6, 0.14]} position={[x, 0.2, z]} color="#5c3a21" />
+        <Box key={`${x}${z}`} size={[0.14, 2.6, 0.14]} position={[x, 0.2, z]} color="#34444f" />
       )))}
-      <Box size={[2.1, 0.1, 2.1]} position={[0, 0.74, 0]} color="#9a6a3a" />
+      <Box size={[2.1, 0.1, 2.1]} position={[0, 0.74, 0]} color="#6e7f88" />
       {[-0.6, 0, 0.6].map((x) => (
-        <Box key={x} size={[0.02, 0.012, 2.1]} position={[x * 1.0 + 0.3, 0.8, 0]} color="#6b4423" />
+        <Box key={x} size={[0.02, 0.012, 2.1]} position={[x * 1.0 + 0.3, 0.8, 0]} color="#3c4c56" />
       ))}
       {/* Baranda */}
       {[0.95, -0.95].map((z) => (
-        <Box key={z} size={[2.0, 0.06, 0.06]} position={[0, 1.22, z]} color="#5c3a21" />
+        <Box key={z} size={[2.0, 0.06, 0.06]} position={[0, 1.22, z]} color="#34444f" />
       ))}
       {[0.95, -0.95].map((x) => (
-        <Box key={x} size={[0.06, 0.06, 2.0]} position={[x, 1.22, 0]} color="#5c3a21" />
+        <Box key={x} size={[0.06, 0.06, 2.0]} position={[x, 1.22, 0]} color="#34444f" />
       ))}
       <Instanced items={rails}>
         <boxGeometry args={[1, 1, 1]} />
-        <meshStandardMaterial color="#8a5a33" roughness={0.9} flatShading />
+        <meshStandardMaterial color="#5d6d76" roughness={0.9} flatShading />
       </Instanced>
       {/* Techo de teja sobre el mirador (parte trasera) */}
       {[-0.9, 0.9].map((x) => (
-        <Box key={x} size={[0.1, 1.5, 0.1]} position={[x, 1.55, -0.9]} color="#5c3a21" />
+        <Box key={x} size={[0.1, 1.5, 0.1]} position={[x, 1.55, -0.9]} color="#34444f" />
       ))}
       <mesh position={[0, 2.45, -0.5]} rotation={[0.28, 0, 0]} castShadow>
         <boxGeometry args={[2.3, 0.08, 1.7]} />
-        <meshStandardMaterial color="#b4532f" roughness={0.85} flatShading />
+        <meshStandardMaterial color="#698696" roughness={0.85} flatShading />
       </mesh>
       {/* Telescopio */}
       <group position={[0.45, 0.8, 0.4]}>

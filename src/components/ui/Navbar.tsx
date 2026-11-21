@@ -13,14 +13,14 @@ export function Navbar({ selectedId, onSelect }: Props) {
       <button
         type="button"
         onClick={() => onSelect(null)}
-        className="pointer-events-auto rounded-2xl bg-[#0b0d10]/70 px-4 py-2 text-left text-[#f6ecd8] shadow-lg backdrop-blur-md transition hover:bg-[#0b0d10]/85"
+        className="pointer-events-auto rounded-2xl bg-[#243C4C]/70 px-4 py-2 text-left text-[#F4FCFB] shadow-lg backdrop-blur-md transition hover:bg-[#243C4C]/85"
         aria-label="Volver a la vista general"
       >
         <span className="font-display block text-lg font-extrabold leading-tight">{PROFILE.name}</span>
-        <span className="block text-xs text-[#f6ecd8]/70">{PROFILE.role}</span>
+        <span className="block text-xs text-[#F4FCFB]/70">{PROFILE.role}</span>
       </button>
 
-      <nav className="pointer-events-auto hidden items-center gap-1 rounded-full bg-[#0b0d10]/70 p-1 shadow-lg backdrop-blur-md lg:flex" aria-label="Proyectos">
+      <nav className="pointer-events-auto hidden items-center gap-1 rounded-full bg-[#243C4C]/70 p-1 shadow-lg backdrop-blur-md lg:flex" aria-label="Proyectos">
         {HOTSPOTS.map((h) => (
           <button
             key={h.id}
@@ -28,7 +28,7 @@ export function Navbar({ selectedId, onSelect }: Props) {
             onClick={() => onSelect(h.id)}
             aria-current={selectedId === h.id}
             className={`rounded-full px-3 py-1.5 text-sm transition ${
-              selectedId === h.id ? 'bg-[#ffb454] font-semibold text-[#0b0d10]' : 'text-[#f6ecd8]/85 hover:bg-white/10'
+              selectedId === h.id ? 'bg-[#5289AD] font-semibold text-[#F4FCFB]' : 'text-[#F4FCFB]/85 hover:bg-white/10'
             }`}
           >
             {h.label}
@@ -42,7 +42,7 @@ export function Navbar({ selectedId, onSelect }: Props) {
           target="_blank"
           rel="noreferrer"
           aria-label="GitHub"
-          className="grid size-10 place-items-center rounded-full bg-[#0b0d10]/70 text-[#f6ecd8] shadow-lg backdrop-blur-md transition hover:bg-[#ffb454] hover:text-[#0b0d10]"
+          className="grid size-10 place-items-center rounded-full bg-[#243C4C]/70 text-[#F4FCFB] shadow-lg backdrop-blur-md transition hover:bg-[#5289AD] hover:text-[#F4FCFB]"
         >
           <Github size={18} />
         </a>
@@ -51,7 +51,7 @@ export function Navbar({ selectedId, onSelect }: Props) {
           target="_blank"
           rel="noreferrer"
           aria-label="LinkedIn"
-          className="grid size-10 place-items-center rounded-full bg-[#0b0d10]/70 text-[#f6ecd8] shadow-lg backdrop-blur-md transition hover:bg-[#ffb454] hover:text-[#0b0d10]"
+          className="grid size-10 place-items-center rounded-full bg-[#243C4C]/70 text-[#F4FCFB] shadow-lg backdrop-blur-md transition hover:bg-[#5289AD] hover:text-[#F4FCFB]"
         >
           <Linkedin size={18} />
         </a>
