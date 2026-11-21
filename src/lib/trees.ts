@@ -114,7 +114,7 @@ export const SPECIES: Record<SpeciesId, SpeciesInfo> = {
     petalSize: 0,
     fall: 0,
     carpet: false,
-    weight: 6,
+    weight: 3,
   },
   pino: {
     id: 'pino',
@@ -124,7 +124,7 @@ export const SPECIES: Record<SpeciesId, SpeciesInfo> = {
     petalSize: 0,
     fall: 0,
     carpet: false,
-    weight: 18,
+    weight: 5,
   },
 }
 export const SPECIES_LIST = Object.values(SPECIES)
@@ -176,7 +176,7 @@ function buildTrees(): TreeInst[] {
       const [x1, z1] = e.points[i]
       const seg = Math.hypot(x1 - x0, z1 - z0)
       acc += seg
-      if (acc < 8) continue
+      if (acc < 13) continue
       acc = 0
       const nx = -(z1 - z0) / seg
       const nz = (x1 - x0) / seg
@@ -190,7 +190,7 @@ function buildTrees(): TreeInst[] {
 
   // Bosque disperso.
   const bag = SPECIES_LIST.flatMap((s) => Array<SpeciesId>(s.weight).fill(s.id))
-  for (let n = 0; n < 1800 && out.length < 120; n++) {
+  for (let n = 0; n < 1800 && out.length < 56; n++) {
     const a = rng.next() * Math.PI * 2
     const r = Math.sqrt(rng.next()) * (WORLD_RADIUS - 3)
     const x = Math.cos(a) * r

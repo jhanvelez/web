@@ -6,6 +6,7 @@ import { GRASS_AVOID, isClear, NETWORK } from '../../lib/layout'
 import { smoothstep, terrainHeight } from '../../lib/terrain'
 import { TREES } from '../../lib/trees'
 import { PLAZAS, PLAZA_LIST, PONDS, WATER_LEVEL, WORLD_RADIUS } from '../../lib/world'
+import { Waterfall } from './Cascade'
 import { Instanced, type InstanceItem } from './Instanced'
 
 const RINGS = 120
@@ -113,7 +114,7 @@ function useScatter() {
     // Palmas de cera
     const palmTrunks: InstanceItem[] = []
     const palmLeaves: InstanceItem[] = []
-    for (let n = 0; n < 100; n++) {
+    for (let n = 0; n < 26; n++) {
       const p = place(0, maxR, 0.6)
       if (!p || TREES.some((t) => Math.hypot(t.x - p.x, t.z - p.z) < 2.2)) continue
       const h = rng.range(3.6, 6.2)
@@ -141,7 +142,7 @@ function useScatter() {
     for (const id of ['A', 'B'] as const) {
       const pl = PLAZAS[id]
       const toK = Math.atan2(PLAZAS.K.z - pl.z, PLAZAS.K.x - pl.x)
-      for (const d of [15, 16.3, 17.6]) {
+      for (const d of [16]) {
         const step = 0.62 / d
         const a0 = toK + (50 * Math.PI) / 180
         const a1 = toK + (310 * Math.PI) / 180
@@ -270,6 +271,7 @@ export function Mountain() {
         <meshStandardMaterial color="#6f5238" flatShading roughness={1} side={THREE.DoubleSide} />
       </mesh>
 
+      <Waterfall />
       {PONDS.map((p, i) => (
         <Water key={i} x={p.x} z={p.z} r={p.r} />
       ))}

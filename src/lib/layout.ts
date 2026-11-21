@@ -1,7 +1,7 @@
 import { HOTSPOTS } from '../data/projects'
 import type { HotspotConfig, PlazaId, Vec2 } from '../types/portfolio'
 import { createRng } from './random'
-import { MOUNTAIN_IDS, PADDOCK, PLAZAS } from './world'
+import { CASCADE, MOUNTAIN_IDS, PADDOCK, PLAZAS } from './world'
 
 export interface Circle {
   x: number
@@ -36,8 +36,8 @@ export interface HouseDef extends Placement {
   main: boolean
 }
 
-/** Casas por montaña: solo la casa principal. Sube estos números para repoblar el pueblo. */
-const COUNTS: Record<'A' | 'B' | 'C', number> = { A: 1, B: 0, C: 0 }
+/** Casas por montaña. */
+const COUNTS: Record<'A' | 'B' | 'C', number> = { A: 3, B: 3, C: 3 }
 
 function buildHouses(): HouseDef[] {
   const out: HouseDef[] = []
@@ -54,7 +54,10 @@ function buildHouses(): HouseDef[] {
     const cand = (n === 1 ? [AWAY] : Array.from({ length: n + 3 }, (_, i) => AWAY - SPAN / 2 + ((i + 0.5) * SPAN) / (n + 3))).filter(
       (a) => Math.abs(Math.atan2(Math.sin(a - toK), Math.cos(a - toK))) > deg(30),
     )
-    cand.slice(0, n).forEach((a, i) => {
+    // Se eligen n ángulos bien repartidos entre los candidatos libres.
+    const pick =
+      cand.length <= n ? cand : Array.from({ length: n }, (_, i) => cand[n === 1 ? 0 : Math.round((i * (cand.length - 1)) / (n - 1))])
+    pick.forEach((a, i) => {
       const x = p.x + Math.cos(a) * HOUSE_RING
       const z = p.z + Math.sin(a) * HOUSE_RING
       out.push({
@@ -172,6 +175,7 @@ export const ARRIERO_START: Vec2 = [K.x + 2.6, K.z + 2.6]
 
 export const KEEP_CLEAR: readonly Circle[] = [
   { x: PADDOCK.x, z: PADDOCK.z, r: PADDOCK.r + 2.5 },
+  { x: CASCADE.mound.x + 2, z: CASCADE.mound.z, r: 10 },
   ...Object.values(PLAZAS).map((p) => ({ x: p.x, z: p.z, r: p.id === 'K' ? 7 : 8.4 })),
   ...HOUSES.map((h) => ({ x: h.x, z: h.z, r: 3.6 })),
   ...HOTSPOTS.filter((h) => h.place.type !== 'house').map((h) => {

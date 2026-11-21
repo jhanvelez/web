@@ -261,7 +261,7 @@ export default function Scene({ selectedId, nearId, intro, onSelect, onNear, onR
           )
         })}
 
-        <ArrieroWalker apiRef={walkerRef} start={location.hash === '#paddock' ? [-14, 17] : ARRIERO_START} /* PADDOCK_TMP */ targets={TARGETS} onNear={onNear} />
+        <ArrieroWalker apiRef={walkerRef} start={location.hash === '#falls' ? [26, 23] : ARRIERO_START} /* FALLS_TMP */ targets={TARGETS} onNear={onNear} />
         <CameraRig focused={!!selectedId} intro={intro} />
         <ReadySignal onReady={() => onReady?.()} />
 

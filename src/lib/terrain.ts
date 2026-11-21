@@ -1,4 +1,4 @@
-import { PLAZA_LIST, PONDS, WORLD_RADIUS } from './world'
+import { CASCADE, PLAZA_LIST, PONDS, WORLD_RADIUS } from './world'
 
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v))
 export const smoothstep = (a: number, b: number, x: number) => {
@@ -16,6 +16,10 @@ export function terrainHeight(x: number, z: number): number {
   for (const p of PLAZA_LIST) {
     const d = Math.hypot(x - p.x, z - p.z)
     p4 += Math.pow(p.h * (1 - smoothstep(p.flat, p.outer, d)), 4)
+  }
+  {
+    const m = CASCADE.mound
+    p4 += Math.pow(m.h * (1 - smoothstep(m.flat, m.outer, Math.hypot(x - m.x, z - m.z))), 4)
   }
   let h = Math.sqrt(Math.sqrt(p4))
 

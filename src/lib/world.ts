@@ -29,13 +29,19 @@ export interface Pond {
   r: number
   depth: number
 }
-/** Estanques en el valle, lejos de los caminos. */
-export const PONDS: readonly Pond[] = [
-  { x: 40, z: 10, r: 7, depth: 2.4 },
-  { x: -42, z: 14, r: 6.5, depth: 2.4 },
-  { x: 4, z: -40, r: 8, depth: 2.6 },
-]
+/** Una sola laguna: recibe la cascada. */
+export const PONDS: readonly Pond[] = [{ x: 38, z: 26, r: 6, depth: 2.6 }]
 export const WATER_LEVEL = 0.2
+
+/**
+ * Cascada: una loma de roca junto a la laguna; la cinta de agua baja por su cara oriental.
+ * `from` está en la cima y `to` al pie, dentro de la laguna.
+ */
+export const CASCADE = {
+  mound: { x: 30, z: 26, h: 3.4, flat: 2, outer: 7.5 },
+  from: [30.4, 26] as readonly [number, number],
+  to: [35.6, 26] as readonly [number, number],
+}
 
 /** Potrero de los caballos de paso fino, en la llanura al noroeste del café. */
 export const PADDOCK = { x: -22, z: 20, r: 8.5 }
