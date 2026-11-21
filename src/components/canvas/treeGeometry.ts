@@ -134,6 +134,7 @@ function palmateLeaf(R: number, center: string, edge: string) {
 function grow(spec: Spec, rng: Rng) {
   const wood: THREE.BufferGeometry[] = []
   const tips: { p: THREE.Vector3; d: THREE.Vector3 }[] = []
+  const mids: THREE.Vector3[] = []
   const c0 = new THREE.Color(spec.wood[0])
   const c1 = new THREE.Color(spec.wood[1])
 
@@ -141,6 +142,7 @@ function grow(spec: Spec, rng: Rng) {
     const r1 = r * spec.taper
     wood.push(limb(p, dir, len, r, r1, c0.clone().lerp(c1, depth / (spec.levels + 0.5))))
     const end = p.clone().addScaledVector(dir, len)
+    if (depth >= 2 && depth < maxDepth) mids.push(end.clone())
     if (depth >= maxDepth) {
       tips.push({ p: end, d: dir.clone() })
       return
@@ -181,7 +183,7 @@ function grow(spec: Spec, rng: Rng) {
     cd.normalize()
     rec(top, cd, spec.trunkH * spec.lenDecay * 1.0, topR, 1, spec.levels)
   }
-  return { wood, tips }
+  return { wood, tips, mids }
 }
 
 function buildPine(rng: Rng): TreeModel {
@@ -211,7 +213,7 @@ function buildPine(rng: Rng): TreeModel {
 
 function buildDeciduous(species: Exclude<SpeciesId, 'pino'>, rng: Rng): TreeModel {
   const spec = SPECS[species]
-  const { wood, tips } = grow(spec, rng)
+  const { wood, tips, mids } = grow(spec, rng)
   const crown: THREE.BufferGeometry[] = []
 
   for (const t of tips) {
@@ -255,6 +257,20 @@ function buildDeciduous(species: Exclude<SpeciesId, 'pino'>, rng: Rng): TreeMode
         g.rotateY(az)
         g.translate(t.p.x, t.p.y, t.p.z)
         crown.push(paint(prep(g), jitterColor(rng.pick(spec.palette), rng)))
+      }
+    }
+  }
+
+  // Racimos intermedios: rellenan la copa para una silueta más redonda y definida.
+  if (spec.crown === 'blossom') {
+    for (const m of mids) {
+      for (let k = 0; k < Math.ceil(spec.perTip / 2); k++) {
+        const r = rng.range(spec.blob[0], spec.blob[1]) * 0.95
+        const gm = new THREE.IcosahedronGeometry(r, 0)
+        gm.rotateX(rng.range(0, 3))
+        gm.rotateY(rng.range(0, 3))
+        gm.translate(m.x + rng.range(-1, 1) * spec.jitter * 0.8, m.y + rng.range(-0.3, 0.6) * spec.jitter, m.z + rng.range(-1, 1) * spec.jitter * 0.8)
+        crown.push(paint(prep(gm), jitterColor(rng.pick(spec.palette), rng)))
       }
     }
   }

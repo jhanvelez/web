@@ -294,6 +294,26 @@ export function ColombianHouse({ palette = 4, floors = 2, detail = 'full', scale
           {garden.map((f, i) => (
             <Flower key={i} position={f.p} color={f.c} />
           ))}
+          {/* Escalones, macetas grandes y farol junto a la puerta */}
+          <Box size={[1.5, 0.1, 0.55]} position={[0, 0.06, D / 2 + 0.3]} color="#9a8f80" />
+          <Box size={[1.2, 0.1, 0.38]} position={[0, 0.16, D / 2 + 0.22]} color="#aa9e8d" />
+          {[-1.0, 1.0].map((x) => (
+            <group key={x} position={[x, 0, D / 2 + 0.5]}>
+              <mesh position={[0, 0.2, 0]} castShadow>
+                <cylinderGeometry args={[0.2, 0.15, 0.4, 8]} />
+                <meshStandardMaterial color="#b35a38" flatShading />
+              </mesh>
+              <mesh position={[0, 0.6, 0]} castShadow>
+                <icosahedronGeometry args={[0.28, 0]} />
+                <meshStandardMaterial color="#3f8a45" flatShading />
+              </mesh>
+              <Flower position={[0.1, 0.82, 0.05]} color={x < 0 ? '#e5483f' : '#f6c445'} />
+            </group>
+          ))}
+          <mesh position={[0.72, 1.2, D / 2 + 0.12]}>
+            <boxGeometry args={[0.12, 0.2, 0.12]} />
+            <meshStandardMaterial color="#ffe2a0" emissive="#ffa83a" emissiveIntensity={1.6} toneMapped={false} />
+          </mesh>
           {[-1, 1].map((s) => (
             <Box key={s} size={[0.9, 0.12, 2.8]} position={[s * 2.9, 0.06, 0.2]} color="#6b4a2e" />
           ))}

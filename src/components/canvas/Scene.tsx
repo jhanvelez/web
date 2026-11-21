@@ -37,10 +37,10 @@ const PROP_BY_KIND: Record<Exclude<HotspotKind, 'jeep'>, () => ReactNode> = {
 function SkyDome() {
   const uniforms = useMemo(
     () => ({
-      top: { value: new THREE.Color('#07050d') },
-      upper: { value: new THREE.Color('#34102b') },
-      mid: { value: new THREE.Color('#b53a2a') },
-      horizon: { value: new THREE.Color('#e08a35') },
+      top: { value: new THREE.Color('#2a1240') },
+      upper: { value: new THREE.Color('#9a2a45') },
+      mid: { value: new THREE.Color('#f2662c') },
+      horizon: { value: new THREE.Color('#ffb83d') },
       sunDir: { value: SUN_DIR.clone() },
     }),
     [],
@@ -119,7 +119,7 @@ function Clouds() {
           {c.puffs.map((p, k) => (
             <mesh key={k} position={p.p} scale={[p.s * 1.4, p.s * 0.6, p.s]}>
               <icosahedronGeometry args={[1, 1]} />
-              <meshStandardMaterial color="#7a4a58" emissive="#ff6a4a" emissiveIntensity={0.18} flatShading roughness={1} />
+              <meshStandardMaterial color="#ffb9a0" emissive="#ff6a4a" emissiveIntensity={0.4} flatShading roughness={1} />
             </mesh>
           ))}
         </group>
@@ -131,12 +131,12 @@ function Clouds() {
 function Lights() {
   return (
     <>
-      <hemisphereLight args={['#c98a6a', '#1a1220', 0.62]} />
-      <ambientLight intensity={0.2} color="#ffb48a" />
+      <hemisphereLight args={['#ffb48a', '#5a3a5a', 1.2]} />
+      <ambientLight intensity={0.5} color="#ffc9a0" />
       <directionalLight
         position={SUN_DIR.clone().multiplyScalar(90).toArray()}
-        intensity={3.4}
-        color="#ff8545"
+        intensity={3.8}
+        color="#ff9050"
         castShadow
         shadow-mapSize={[4096, 4096]}
         shadow-camera-left={-66}
@@ -149,7 +149,7 @@ function Lights() {
         shadow-normalBias={0.04}
       />
       {/* Relleno magenta desde el lado de la cámara para que el contraluz no apague los frentes */}
-      <directionalLight position={[22, 12, 26]} intensity={0.55} color="#c05a8a" />
+      <directionalLight position={[22, 12, 26]} intensity={1.0} color="#ff8fa8" />
       <Environment resolution={64} environmentIntensity={0.4}>
         <Lightformer form="rect" intensity={2.5} color="#ff8a4a" position={[-8, 4, -6]} scale={[10, 4, 1]} />
         <Lightformer form="rect" intensity={1.2} color="#b04a9a" position={[8, 6, 6]} scale={[10, 4, 1]} />
@@ -202,7 +202,7 @@ export default function Scene({ selectedId, nearId, intro, onSelect, onNear, onR
       gl={{ antialias: true, powerPreference: 'high-performance' }}
       onPointerMissed={() => onSelect(null)}
     >
-      <fog attach="fog" args={['#2a1320', 90, 320]} />
+      <fog attach="fog" args={['#d9683f', 100, 340]} />
       <Suspense fallback={null}>
         <SkyDome />
         <Lights />
@@ -266,8 +266,8 @@ export default function Scene({ selectedId, nearId, intro, onSelect, onNear, onR
         <ReadySignal onReady={() => onReady?.()} />
 
         <EffectComposer multisampling={4}>
-          <Bloom intensity={0.55} luminanceThreshold={0.85} luminanceSmoothing={0.25} mipmapBlur />
-          <Vignette eskil={false} offset={0.15} darkness={0.8} />
+          <Bloom intensity={0.6} luminanceThreshold={0.85} luminanceSmoothing={0.25} mipmapBlur />
+          <Vignette eskil={false} offset={0.2} darkness={0.5} />
           <ToneMapping mode={ToneMappingMode.ACES_FILMIC} />
         </EffectComposer>
       </Suspense>

@@ -36,7 +36,8 @@ export interface HouseDef extends Placement {
   main: boolean
 }
 
-const COUNTS: Record<'A' | 'B' | 'C', number> = { A: 5, B: 5, C: 4 }
+/** Casas por montaña: solo la casa principal. Sube estos números para repoblar el pueblo. */
+const COUNTS: Record<'A' | 'B' | 'C', number> = { A: 1, B: 0, C: 0 }
 
 function buildHouses(): HouseDef[] {
   const out: HouseDef[] = []
@@ -50,7 +51,7 @@ function buildHouses(): HouseDef[] {
     const toK = Math.atan2(K.z - p.z, K.x - p.x)
     const n = COUNTS[id]
     // Candidatos repartidos en el arco; se descarta el sector del camino que baja al café.
-    const cand = Array.from({ length: n + 3 }, (_, i) => AWAY - SPAN / 2 + ((i + 0.5) * SPAN) / (n + 3)).filter(
+    const cand = (n === 1 ? [AWAY] : Array.from({ length: n + 3 }, (_, i) => AWAY - SPAN / 2 + ((i + 0.5) * SPAN) / (n + 3))).filter(
       (a) => Math.abs(Math.atan2(Math.sin(a - toK), Math.cos(a - toK))) > deg(30),
     )
     cand.slice(0, n).forEach((a, i) => {
