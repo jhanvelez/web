@@ -171,18 +171,27 @@ export const NETWORK = buildNetwork()
 
 /* ───────────── Zonas libres ───────────── */
 
-export const ARRIERO_START: Vec2 = [K.x + 2.6, K.z + 2.6]
+/** Letras del nombre: en el centro del mundo, de cara a la cámara inicial (+x, +z). */
+export const NAME_CENTER: Vec2 = [10, 8]
+export const NAME_YAW = Math.PI / 4
+/** El Jeep arranca frente a las letras, mirándolas. */
+export const JEEP_START = { x: NAME_CENTER[0] + 5.5, z: NAME_CENTER[1] + 5.5, yaw: Math.atan2(-1, -1) }
+export const ARRIERO_START: Vec2 = [JEEP_START.x, JEEP_START.z]
+
+/** Ancho de media vía: troncales de carretera y ramales a las casas. */
+export const ROAD_HALF = (edgeA: string) => (edgeA.startsWith('H-') ? 1.1 : 1.9)
 
 export const KEEP_CLEAR: readonly Circle[] = [
   { x: PADDOCK.x, z: PADDOCK.z, r: PADDOCK.r + 2.5 },
   { x: CASCADE.mound.x + 2, z: CASCADE.mound.z, r: 10 },
+  { x: NAME_CENTER[0], z: NAME_CENTER[1], r: 11 },
   ...Object.values(PLAZAS).map((p) => ({ x: p.x, z: p.z, r: p.id === 'K' ? 7 : 8.4 })),
   ...HOUSES.map((h) => ({ x: h.x, z: h.z, r: 3.6 })),
   ...HOTSPOTS.filter((h) => h.place.type !== 'house').map((h) => {
     const p = resolvePlacement(h)
     return { x: p.x, z: p.z, r: 2.3 }
   }),
-  ...NETWORK.edges.flatMap((e) => e.points.map(([x, z]) => ({ x, z, r: 0.9 }))),
+  ...NETWORK.edges.flatMap((e) => e.points.map(([x, z]) => ({ x, z, r: ROAD_HALF(e.a) + 0.6 }))),
 ]
 
 export const isClear = (x: number, z: number, extra = 0) =>
@@ -212,5 +221,5 @@ export const GRASS_AVOID: readonly Circle[] = [
     return { x: p.x, z: p.z, r: 1.7 }
   }),
   ...LAMPS.map(([x, z]) => ({ x, z, r: 0.5 })),
-  ...NETWORK.edges.flatMap((e) => e.points.map(([x, z]) => ({ x, z, r: 0.95 }))),
+  ...NETWORK.edges.flatMap((e) => e.points.map(([x, z]) => ({ x, z, r: ROAD_HALF(e.a) + 0.35 }))),
 ]

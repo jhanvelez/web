@@ -1,24 +1,70 @@
-import { useEffect, useState } from 'react'
-import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, ChevronsUp, Coffee } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { Coffee, Megaphone, Zap } from 'lucide-react'
 import { input } from '../../lib/input'
 
-type Dir = 'up' | 'down' | 'left' | 'right'
+const SIZE = 148
+const THUMB = 62
 
-function Btn({ dir, children, className }: { dir: Dir; children: React.ReactNode; className: string }) {
-  const on = (v: boolean) => () => input.set(dir, v)
+/** Palanca analógica tipo consola: el giro y la aceleración dependen de cuánto la inclines. */
+function Stick() {
+  const base = useRef<HTMLDivElement>(null)
+  const active = useRef<number | null>(null)
+  const [thumb, setThumb] = useState({ x: 0, y: 0 })
+
+  const update = (e: React.PointerEvent) => {
+    const r = base.current!.getBoundingClientRect()
+    let dx = (e.clientX - (r.left + r.width / 2)) / (r.width / 2)
+    let dy = (e.clientY - (r.top + r.height / 2)) / (r.height / 2)
+    const len = Math.hypot(dx, dy)
+    if (len > 1) {
+      dx /= len
+      dy /= len
+    }
+    setThumb({ x: dx, y: dy })
+    // Zona muerta pequeña y respuesta suave.
+    const dz = (v: number) => (Math.abs(v) < 0.12 ? 0 : v)
+    input.setAnalog(dz(dx), -dz(dy))
+  }
+  const release = () => {
+    active.current = null
+    setThumb({ x: 0, y: 0 })
+    input.setAnalog(0, 0)
+  }
+
   return (
-    <button
-      type="button"
-      aria-label={dir}
-      onPointerDown={on(true)}
-      onPointerUp={on(false)}
-      onPointerLeave={on(false)}
-      onPointerCancel={on(false)}
+    <div
+      ref={base}
+      role="application"
+      aria-label="Palanca de conducción"
+      onPointerDown={(e) => {
+        active.current = e.pointerId
+        e.currentTarget.setPointerCapture(e.pointerId)
+        update(e)
+      }}
+      onPointerMove={(e) => active.current === e.pointerId && update(e)}
+      onPointerUp={release}
+      onPointerCancel={release}
       onContextMenu={(e) => e.preventDefault()}
-      className={`absolute grid size-14 touch-none select-none place-items-center rounded-2xl bg-[#0b0d10]/70 text-[#ffd36a] backdrop-blur-md active:bg-[#ffb454] active:text-[#0b0d10] ${className}`}
+      className="fixed bottom-28 left-4 z-30 touch-none select-none rounded-full border-2 border-white/15 bg-[#0b0d10]/60 backdrop-blur-md"
+      style={{ width: SIZE, height: SIZE }}
     >
-      {children}
-    </button>
+      {/* Marcas de dirección */}
+      <div className="pointer-events-none absolute inset-0 grid place-items-center text-[10px] text-white/25">
+        <span className="absolute top-2">▲</span>
+        <span className="absolute bottom-2">▼</span>
+        <span className="absolute left-3">◀</span>
+        <span className="absolute right-3">▶</span>
+      </div>
+      <div
+        className="pointer-events-none absolute rounded-full bg-[#ffb454] shadow-[0_0_20px_rgba(255,180,84,0.5)]"
+        style={{
+          width: THUMB,
+          height: THUMB,
+          left: SIZE / 2 - THUMB / 2 + thumb.x * (SIZE / 2 - THUMB / 2),
+          top: SIZE / 2 - THUMB / 2 + thumb.y * (SIZE / 2 - THUMB / 2),
+        }}
+      />
+    </div>
   )
 }
 
@@ -27,7 +73,7 @@ interface Props {
   onInteract: () => void
 }
 
-/** Cruceta y botones para pantallas táctiles (el arriero también se mueve sin teclado). */
+/** Controles táctiles: palanca analógica a la izquierda; pito, turbo e interactuar a la derecha. */
 export function TouchPad({ canInteract, onInteract }: Props) {
   const [coarse, setCoarse] = useState(false)
   useEffect(() => {
@@ -35,32 +81,31 @@ export function TouchPad({ canInteract, onInteract }: Props) {
   }, [])
   if (!coarse) return null
 
+  const btn =
+    'grid size-14 touch-none select-none place-items-center rounded-full bg-[#0b0d10]/70 text-[#ffd36a] backdrop-blur-md active:bg-[#ffb454] active:text-[#0b0d10]'
   return (
     <>
-      <div className="fixed bottom-32 left-3 z-30 size-44">
-        <Btn dir="up" className="left-1/2 top-0 -translate-x-1/2"><ArrowUp /></Btn>
-        <Btn dir="down" className="bottom-0 left-1/2 -translate-x-1/2"><ArrowDown /></Btn>
-        <Btn dir="left" className="left-0 top-1/2 -translate-y-1/2"><ArrowLeft /></Btn>
-        <Btn dir="right" className="right-0 top-1/2 -translate-y-1/2"><ArrowRight /></Btn>
-      </div>
-      <div className="fixed bottom-44 right-3 z-30 flex flex-col gap-3">
-        <button
-          type="button"
-          onPointerDown={() => input.pressJump()}
-          aria-label="Saltar"
-          className="grid size-14 touch-none place-items-center rounded-full bg-[#0b0d10]/70 text-[#ffd36a] backdrop-blur-md active:bg-[#ffb454] active:text-[#0b0d10]"
-        >
-          <ChevronsUp />
-        </button>
-        <button
-          type="button"
-          onClick={onInteract}
-          disabled={!canInteract}
-          aria-label="Interactuar"
-          className="grid size-14 place-items-center rounded-full bg-[#ffb454] text-[#0b0d10] shadow-lg transition disabled:opacity-30"
-        >
+      <Stick />
+      <div className="fixed bottom-28 right-4 z-30 flex flex-col items-center gap-3">
+        <button type="button" aria-label="Interactuar" onClick={onInteract} disabled={!canInteract} className="grid size-16 place-items-center rounded-full bg-[#ffb454] text-[#0b0d10] shadow-lg transition disabled:opacity-30">
           <Coffee />
         </button>
+        <div className="flex gap-3">
+          <button type="button" aria-label="Pito" onPointerDown={() => input.pressJump()} className={btn}>
+            <Megaphone size={22} />
+          </button>
+          <button
+            type="button"
+            aria-label="Turbo"
+            onPointerDown={() => input.set('run', true)}
+            onPointerUp={() => input.set('run', false)}
+            onPointerLeave={() => input.set('run', false)}
+            onPointerCancel={() => input.set('run', false)}
+            className={btn}
+          >
+            <Zap size={22} />
+          </button>
+        </div>
       </div>
     </>
   )

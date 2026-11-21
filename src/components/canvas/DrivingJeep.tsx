@@ -2,7 +2,7 @@ import { useMemo, useRef, type ReactNode } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { pathBetween } from '../../lib/nav'
-import { live } from '../../lib/state'
+import { horseRegistry, live } from '../../lib/state'
 import { terrainHeight } from '../../lib/terrain'
 import type { Vec2 } from '../../types/portfolio'
 import { Particles, type ParticleBuffers } from './Particles'
@@ -29,7 +29,7 @@ interface Props {
  */
 export function DrivingJeep({ paused, children }: Props) {
   const group = useRef<THREE.Group>(null)
-  const rig = useMemo<JeepRig>(() => ({ roll: 0, bounce: [0, 0, 0, 0] }), [])
+  const rig = useMemo<JeepRig>(() => ({ roll: 0, bounce: [0, 0, 0, 0], steer: 0 }), [])
   const st = useRef({
     x: PATROL[0][0],
     z: PATROL[0][1],
@@ -87,6 +87,7 @@ export function DrivingJeep({ paused, children }: Props) {
     rig.roll += (s.speed * dt) / 0.2
     for (let i = 0; i < 4; i++) rig.bounce[i] = s.y * 0.6 + Math.sin(t * 35 + i * 1.7) * 0.014 * sf
 
+    horseRegistry.set('npc-jeep', { x: s.x, z: s.z, card: 'jeep', r: 4, prio: 2 })
     live.jeep.x = s.x
     live.jeep.z = s.z
     live.jeep.yaw = s.yaw

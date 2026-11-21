@@ -5,19 +5,21 @@ import { Bloom, EffectComposer, ToneMapping, Vignette } from '@react-three/postp
 import { ToneMappingMode } from 'postprocessing'
 import * as THREE from 'three'
 import { HOTSPOTS } from '../../data/projects'
-import { ARRIERO_START, HOTSPOT_POINTS, HOUSES, resolvePlacement, standPoint } from '../../lib/layout'
+import { HOTSPOT_POINTS, HOUSES, JEEP_START, resolvePlacement, standPoint } from '../../lib/layout'
 import { createRng } from '../../lib/random'
 import { live } from '../../lib/state'
 import { terrainHeight } from '../../lib/terrain'
 import type { HotspotKind, Vec3 } from '../../types/portfolio'
 import { Fireflies, Lamps } from './Ambient'
-import { ArrieroWalker, type ArrieroApi, type NearTarget } from './Arriero'
+import { type ArrieroApi, type NearTarget } from './Arriero'
 import { CameraRig } from './CameraRig'
 import { CoffeeCorner } from './CoffeeCorner'
 import { ColombianHouse } from './ColombianHouse'
 import { DrivingJeep } from './DrivingJeep'
 import { Hotspot } from './Hotspot'
 import { Mountain } from './Mountain'
+import { NameLetters } from './NameLetters'
+import { PlayerJeep } from './PlayerJeep'
 import { Paddock, Riders } from './Stable'
 import { FallingPetals, Forest } from './Trees'
 import { CoffeeSack, FincaSign, JeepWillys, Viewpoint } from './Props'
@@ -261,7 +263,8 @@ export default function Scene({ selectedId, nearId, intro, onSelect, onNear, onR
           )
         })}
 
-        <ArrieroWalker apiRef={walkerRef} start={location.hash === '#falls' ? [26, 23] : ARRIERO_START} /* FALLS_TMP */ targets={TARGETS} onNear={onNear} />
+        <PlayerJeep apiRef={walkerRef} start={JEEP_START} targets={TARGETS} onNear={onNear} />
+        <NameLetters />
         <CameraRig focused={!!selectedId} intro={intro} />
         <ReadySignal onReady={() => onReady?.()} />
 

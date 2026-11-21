@@ -2,7 +2,7 @@ import { useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { createRng } from '../../lib/random'
-import { GRASS_AVOID, isClear, NETWORK } from '../../lib/layout'
+import { GRASS_AVOID, isClear, NETWORK, ROAD_HALF } from '../../lib/layout'
 import { smoothstep, terrainHeight } from '../../lib/terrain'
 import { TREES } from '../../lib/trees'
 import { PLAZAS, PLAZA_LIST, PONDS, WATER_LEVEL, WORLD_RADIUS } from '../../lib/world'
@@ -114,7 +114,7 @@ function useScatter() {
     // Palmas de cera
     const palmTrunks: InstanceItem[] = []
     const palmLeaves: InstanceItem[] = []
-    for (let n = 0; n < 26; n++) {
+    for (let n = 0; n < 10; n++) {
       const p = place(0, maxR, 0.6)
       if (!p || TREES.some((t) => Math.hypot(t.x - p.x, t.z - p.z) < 2.2)) continue
       const h = rng.range(3.6, 6.2)
@@ -183,17 +183,18 @@ function useScatter() {
 
     // Empedrado de río: caminos (árbol) y plazas. Piedras redondeadas, densas, como en una calle colonial.
     const cobbles: InstanceItem[] = []
-    const addCobble = (x: number, z: number, big = 1) => {
+    const addCobble = (x: number, z: number, big = 1, color?: string) => {
       const s = rng.range(0.17, 0.27) * big
       cobbles.push({
         position: [x, terrainHeight(x, z) + 0.01, z],
         rotation: [rng.range(-0.15, 0.15), rng.range(0, 3), rng.range(-0.15, 0.15)],
         scale: [s * rng.range(0.9, 1.3), s * 0.45, s * rng.range(0.8, 1.2)],
-        color: rng.pick(COBBLES),
+        color: color ?? rng.pick(COBBLES),
       })
     }
+    // Carreteras de piedra: calzada ancha con bordillo oscuro y línea central clara.
     for (const e of NETWORK.edges) {
-      const width = e.a.startsWith('H-') ? 0.75 : 0.95
+      const half = ROAD_HALF(e.a)
       e.points.forEach(([x, z], i, arr) => {
         const nx = arr[Math.min(i + 1, arr.length - 1)]
         const pv = arr[Math.max(i - 1, 0)]
@@ -202,10 +203,17 @@ function useScatter() {
         const l = Math.hypot(dx, dz) || 1
         const px = -dz / l
         const pz = dx / l
-        for (let k = -4; k <= 4; k++) {
-          const lat = (k / 4) * width + rng.range(-0.09, 0.09)
-          addCobble(x + px * lat + rng.range(-0.12, 0.12) * (dx / l), z + pz * lat + rng.range(-0.12, 0.12) * (dz / l))
+        const across = Math.max(4, Math.round((half * 2) / 0.26))
+        for (let k = 0; k <= across; k++) {
+          const lat = (k / across - 0.5) * 2 * half + rng.range(-0.07, 0.07)
+          addCobble(x + px * lat + rng.range(-0.1, 0.1) * (dx / l), z + pz * lat + rng.range(-0.1, 0.1) * (dz / l))
         }
+        if (i % 2 === 0) {
+          // Bordillo: piedras mayores y oscuras a ambos lados.
+          for (const side of [-1, 1]) addCobble(x + px * side * (half + 0.22), z + pz * side * (half + 0.22), 1.55, '#4a4038')
+        }
+        // Línea central de piedras claras, solo en las troncales.
+        if (!e.a.startsWith('H-') && i % 4 === 0) addCobble(x, z, 0.8, '#d8cfae')
       })
     }
     for (const pl of PLAZA_LIST) {

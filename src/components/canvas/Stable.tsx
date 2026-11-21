@@ -10,6 +10,7 @@ import { terrainHeight } from '../../lib/terrain'
 import { PADDOCK } from '../../lib/world'
 import type { Vec2 } from '../../types/portfolio'
 import { Horse, makeRig, type HorseLook, type RiderLook } from './Horse'
+import '../../lib/pois'
 import { Instanced, type InstanceItem } from './Instanced'
 
 const wrap = (a: number) => Math.atan2(Math.sin(a), Math.cos(a))
@@ -175,14 +176,11 @@ function RiderHorse({ id, look, rider, seed }: RiderProps) {
   )
 }
 
-/** Cuatro chalanes con sus caballos, cada uno con su sombrero, chaqueta y capa de pelaje. */
+/** Un chalán a caballo, con sombrero claro, chaqueta oscura, jeans y botas. */
 export function Riders() {
   return (
     <>
       <RiderHorse id="r1" seed={1} look={{ ...COATS.oscuro }} rider={{ jacket: '#1d2126', hat: '#e9dcc0' }} />
-      <RiderHorse id="r2" seed={5} look={{ ...COATS.bayo, halter: true }} rider={{ jacket: '#2f4a3a', hat: '#d8c7a3' }} />
-      <RiderHorse id="r3" seed={9} look={{ ...COATS.azabache, halter: true }} rider={{ jacket: '#5a2a22', hat: '#caa97a', jeans: '#2c4a73' }} />
-      <RiderHorse id="r4" seed={13} look={{ ...COATS.moro, halter: true }} rider={{ jacket: '#3a3f47', hat: '#efe3c8' }} />
     </>
   )
 }
@@ -253,10 +251,13 @@ export function Paddock() {
     if (timer.current > 0) return
     timer.current = 0.25
     let best: string | null = null
-    let bd = 3.4
+    let bp = -1
+    let bd = Infinity
     for (const h of horseRegistry.values()) {
       const d = Math.hypot(h.x - live.player.x, h.z - live.player.z)
-      if (d < bd) {
+      const prio = h.prio ?? 2
+      if (d < (h.r ?? 3.4) && (prio > bp || (prio === bp && d < bd))) {
+        bp = prio
         bd = d
         best = h.card
       }

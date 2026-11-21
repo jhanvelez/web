@@ -9,7 +9,7 @@ const DIST_DEFAULT = 42
 const DIST_MIN = 15
 const DIST_MAX = 85
 const DIST_FOCUS = 20
-const DIST_INTRO = 8.5
+const DIST_INTRO = 13
 const INTRO_DIST = 160
 
 interface Props {

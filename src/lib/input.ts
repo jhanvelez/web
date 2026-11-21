@@ -2,6 +2,8 @@ type Key = 'up' | 'down' | 'left' | 'right' | 'run'
 
 const down = new Set<Key>()
 let jump = false
+let ax = 0
+let ay = 0
 
 const MAP: Record<string, Key> = {
   ArrowUp: 'up', w: 'up', W: 'up',
@@ -16,8 +18,14 @@ export const input = {
     if (on) down.add(k)
     else down.delete(k)
   },
-  /** Eje en pantalla: x (derecha +), y (adelante +). */
+  /** Palanca analógica (táctil): reemplaza a las teclas mientras se usa. */
+  setAnalog(x: number, y: number) {
+    ax = x
+    ay = y
+  },
+  /** x: derecha +, y: adelante + (aceleración). */
   axis() {
+    if (Math.hypot(ax, ay) > 0.08) return { x: ax, y: ay }
     return {
       x: (down.has('right') ? 1 : 0) - (down.has('left') ? 1 : 0),
       y: (down.has('up') ? 1 : 0) - (down.has('down') ? 1 : 0),

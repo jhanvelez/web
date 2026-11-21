@@ -176,13 +176,13 @@ function buildTrees(): TreeInst[] {
       const [x1, z1] = e.points[i]
       const seg = Math.hypot(x1 - x0, z1 - z0)
       acc += seg
-      if (acc < 13) continue
+      if (acc < 24) continue
       acc = 0
       const nx = -(z1 - z0) / seg
       const nz = (x1 - x0) / seg
       for (const side of [-1, 1]) {
-        const x = x1 + nx * side * 2.7
-        const z = z1 + nz * side * 2.7
+        const x = x1 + nx * side * 4.4
+        const z = z1 + nz * side * 4.4
         if (free(x, z, 2.2)) add(avenue[k++ % avenue.length], x, z, [0.95, 1.12])
       }
     }
@@ -190,7 +190,7 @@ function buildTrees(): TreeInst[] {
 
   // Bosque disperso.
   const bag = SPECIES_LIST.flatMap((s) => Array<SpeciesId>(s.weight).fill(s.id))
-  for (let n = 0; n < 1800 && out.length < 56; n++) {
+  for (let n = 0; n < 1800 && out.length < 26; n++) {
     const a = rng.next() * Math.PI * 2
     const r = Math.sqrt(rng.next()) * (WORLD_RADIUS - 3)
     const x = Math.cos(a) * r

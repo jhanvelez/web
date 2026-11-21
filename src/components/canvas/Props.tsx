@@ -28,25 +28,31 @@ function Cyl({ r, h, position, color, rotation, seg = 10 }: { r: number; h: numb
 
 /* ───────────── Jeep Willys ───────────── */
 
-const JEEP = { body: '#1f9a8a', trim: '#f2e8cf', dark: '#2a2a2a', chrome: '#cfd3d6' }
+const JEEP_BASE = { body: '#1f9a8a', trim: '#f2e8cf', dark: '#2a2a2a', chrome: '#cfd3d6' }
 
 export interface JeepRig {
   /** Ángulo de giro de las ruedas (rad). */
   roll: number
   /** Rebote vertical de cada rueda: [del. der., del. izq., tras. der., tras. izq.]. */
   bounce: [number, number, number, number]
+  /** Giro del volante (rad, + = izquierda): gira las llantas delanteras. */
+  steer: number
 }
-const STATIC_RIG: JeepRig = { roll: 0, bounce: [0, 0, 0, 0] }
+const STATIC_RIG: JeepRig = { roll: 0, bounce: [0, 0, 0, 0], steer: 0 }
 
 function Wheel({ position, index, rig }: { position: V3; index: number; rig: JeepRig }) {
   const outer = useRef<THREE.Group>(null)
   const spin = useRef<THREE.Group>(null)
   useFrame(() => {
-    if (outer.current) outer.current.position.y = position[1] + rig.bounce[index]
+    if (outer.current) {
+      outer.current.position.y = position[1] + rig.bounce[index]
+      outer.current.rotation.y = index < 2 ? rig.steer : 0
+    }
     if (spin.current) spin.current.rotation.y = -rig.roll
   })
   return (
-    <group ref={outer} position={position} rotation={[0, 0, Math.PI / 2]}>
+    <group ref={outer} position={position}>
+     <group rotation={[0, 0, Math.PI / 2]}>
       <group ref={spin}>
         <mesh castShadow>
           <cylinderGeometry args={[0.2, 0.2, 0.15, 14]} />
@@ -54,7 +60,7 @@ function Wheel({ position, index, rig }: { position: V3; index: number; rig: Jee
         </mesh>
         <mesh>
           <cylinderGeometry args={[0.1, 0.1, 0.16, 10]} />
-          <meshStandardMaterial color={JEEP.trim} roughness={0.5} flatShading />
+          <meshStandardMaterial color={JEEP_BASE.trim} roughness={0.5} flatShading />
         </mesh>
         {/* Tacos del neumático: se nota que gira */}
         {Array.from({ length: 8 }, (_, i) => (
@@ -64,12 +70,14 @@ function Wheel({ position, index, rig }: { position: V3; index: number; rig: Jee
           </mesh>
         ))}
       </group>
+     </group>
     </group>
   )
 }
 
 /** Willys clásico estilo "yipao" cafetero, con carga de café en el techo. Frente hacia +Z. */
-export function JeepWillys({ rig = STATIC_RIG }: { rig?: JeepRig }) {
+export function JeepWillys({ rig = STATIC_RIG, body = JEEP_BASE.body }: { rig?: JeepRig; body?: string }) {
+  const JEEP = { ...JEEP_BASE, body }
   return (
     <group>
       <Box size={[0.8, 0.1, 1.75]} position={[0, 0.3, 0]} color={JEEP.dark} />

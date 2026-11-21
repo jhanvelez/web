@@ -19,7 +19,7 @@ const SKILLS = [
 const INTRO_LINES = [
   `Soy ${PROFILE.name}`,
   PROFILE.role,
-  'Construyo software de punta a punta. Este arriero eres tú: recorre las montañas y entra a cada casa para ver mis proyectos.',
+  'Construyo software de punta a punta. Este arriero eres tú: maneja su Jeep por las montañas, choca mi nombre si te atreves y entra a cada casa para ver mis proyectos.',
 ]
 
 /** Bienvenida estilo terminal: el arriero aparece grande como mascota y la carta se escribe sola. */
@@ -71,7 +71,7 @@ export function IntroCard({ visible, onStart }: Props) {
         >
           Explorar el mundo <ArrowRight size={18} />
         </button>
-        <p className="mt-3 text-center text-[11px] text-white/45">↑ ↓ ← → para caminar · o pulsa el botón</p>
+        <p className="mt-3 text-center text-[11px] text-white/45">↑ acelerar · ↓ frenar · ← → girar · o pulsa el botón</p>
       </div>
     </section>
   )

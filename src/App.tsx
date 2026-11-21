@@ -92,7 +92,7 @@ export default function App() {
             </p>
           )}
           <p className="rounded-full bg-[#0b0d10]/70 px-4 py-1.5 text-xs text-[#fff1dc] backdrop-blur-md">
-            ↑ ↓ ← → mover · Shift correr · Espacio saltar · Q / E girar · rueda zoom · M mapa
+            ↑ ↓ acelerar/frenar · ← → girar · Shift turbo · Espacio pito · Q / E cámara · M mapa
           </p>
         </div>
       )}

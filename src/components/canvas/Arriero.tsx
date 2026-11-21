@@ -22,7 +22,7 @@ function M({ color, rough = 0.9 }: { color: string; rough?: number }) {
  * Arriero antioqueño low-poly: sombrero aguadeño, ruana al hombro, carriel y pantalón arremangado.
  * `walk` (0..1) mezcla la animación de caminata; en reposo respira, mueve la cabeza y saluda cada ~8 s.
  */
-function Arriero({ walk, pace }: { walk: MutableRefObject<number>; pace: MutableRefObject<number> }) {
+export function Arriero({ walk, pace, seated = false, steer }: { walk: MutableRefObject<number>; pace: MutableRefObject<number>; seated?: boolean; steer?: MutableRefObject<number> }) {
   const phase = useRef(0)
   const body = useRef<THREE.Group>(null)
   const chest = useRef<THREE.Group>(null)
@@ -48,6 +48,14 @@ function Arriero({ walk, pace }: { walk: MutableRefObject<number>; pace: Mutable
       head.current.rotation.y = Math.sin(t * 0.5) * 0.18 * (1 - w)
       head.current.rotation.x = Math.sin(t * 0.9) * 0.02
     }
+    if (seated) {
+      // Manos al volante: los brazos van al frente y acompañan el giro.
+      const st = steer?.current ?? 0
+      if (armL.current) armL.current.rotation.set(-1.2, 0, -0.1 - st * 0.45)
+      if (armR.current) armR.current.rotation.set(-1.2, 0, 0.1 - st * 0.45)
+      if (head.current) head.current.rotation.y = -st * 0.25
+      return
+    }
     if (legL.current) legL.current.rotation.x = stride * 0.65 * w
     if (legR.current) legR.current.rotation.x = -stride * 0.65 * w
     if (armL.current) armL.current.rotation.x = -stride * 0.5 * w
@@ -66,7 +74,7 @@ function Arriero({ walk, pace }: { walk: MutableRefObject<number>; pace: Mutable
       <group ref={body}>
         {/* Piernas articuladas en la cadera: pantorrilla al aire, pantalón arremangado, alpargata */}
         {([[-0.09, legL], [0.09, legR]] as const).map(([x, ref]) => (
-          <group key={x} ref={ref} position={[x, 0.5, 0]}>
+          <group key={x} ref={ref} position={[x, 0.5, 0]} visible={!seated}>
             <mesh position={[0, -0.36, 0]} castShadow>
               <cylinderGeometry args={[0.04, 0.045, 0.2, 6]} />
               <M color={SKIN} />

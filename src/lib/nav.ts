@@ -1,7 +1,8 @@
 import type { Vec2 } from '../types/portfolio'
-import { HOUSES, houseStand, NETWORK } from './layout'
+import { HOUSES, houseStand, NETWORK, PADDOCK_GATE_ANGLE } from './layout'
+import { TREES } from './trees'
 import { terrainHeight } from './terrain'
-import { WATER_LEVEL, WORLD_RADIUS } from './world'
+import { PADDOCK, WATER_LEVEL, WORLD_RADIUS } from './world'
 
 const dist = (a: Vec2, b: Vec2) => Math.hypot(a[0] - b[0], a[1] - b[1])
 
@@ -81,6 +82,18 @@ export function blocked(x: number, z: number): boolean {
   if (Math.hypot(x, z) > WORLD_RADIUS - 2.5) return true
   if (terrainHeight(x, z) < WATER_LEVEL + 0.02) return true
   for (const h of HOUSES) if (Math.hypot(x - h.x, z - h.z) < (h.main ? 2.9 : 2.5)) return true
+  return false
+}
+
+/** Bloqueos para el Jeep: además de lo anterior, troncos de árbol y la cerca del potrero (salvo la puerta). */
+export function carBlocked(x: number, z: number): boolean {
+  if (blocked(x, z)) return true
+  for (const t of TREES) if (Math.hypot(x - t.x, z - t.z) < 0.65) return true
+  const d = Math.hypot(x - PADDOCK.x, z - PADDOCK.z)
+  if (Math.abs(d - PADDOCK.r) < 0.7) {
+    const a = Math.atan2(z - PADDOCK.z, x - PADDOCK.x)
+    if (Math.abs(Math.atan2(Math.sin(a - PADDOCK_GATE_ANGLE), Math.cos(a - PADDOCK_GATE_ANGLE))) > 0.32) return true
+  }
   return false
 }
 
